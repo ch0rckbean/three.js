@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create_Sphere_Cube</title>
+    <style>
+        body{
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    
+    <script type="importmap" >
+        {
+        "imports":{
+            "three":"../node_modules/three/build/three.module.js"
+        }
+    }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import {AxesHelper} from '../node_modules/three/src/helpers/AxesHelper.js'
+
+        const rd_w=640;
+        const rd_h=480;
+//기본 setting
+        var scene=new THREE.Scene();
+        var camera=new THREE.PerspectiveCamera(45,rd_w/rd_h,10,200);
+        var renderer=new THREE.WebGLRenderer();
+        renderer.setSize(rd_w,rd_h);
+//cmr setting
+        camera.position.x=-30;
+        camera.position.y=40;
+        camera.position.z=30;
+        camera.lookAt(scene.position);
+//보조 축 추가
+        var axes=new THREE.AxesHelper(20); 
+        scene.add(axes);
+//평면 추가
+        var planeGeometry=new THREE.PlaneGeometry(60,20);
+        var planeMaterial=new THREE.MeshBasicMaterial({color:0xcccccc});  //Material 객체를 통해 색상,투명도 등 설정
+        var plane=new THREE.Mesh(planeGeometry,planeMaterial);  //Mesh  객체를 통한 결합
+
+        plane.rotation.x=-0.5*Math.PI;
+        plane.position.x=15;
+        plane.position.y=0;
+        plane.position.z=0;
+        scene.add(plane);
+//cube 추가
+        var cubeGeometry=new THREE.BoxGeometry(4,4,4);
+        var cubeMaterial=new THREE.MeshBasicMaterial({color:0xff0000,wireframe:true});
+        var cube=new THREE.Mesh(cubeGeometry,cubeMaterial);
+
+        cube.position.x=-4;
+        cube.position.y=3;
+        cube.position.z=0;
+
+        scene.add(cube);
+//sphere 추가
+        var sphereGeometry=new THREE.SphereGeometry(4,20,20);
+        var sphereMaterial=new THREE.MeshBasicMaterial({color:0x7777ff,wireframe:true});
+        var sphere=new THREE.Mesh(sphereGeometry,sphereMaterial);
+
+        sphere.position.x=20;
+        sphere.position.y=4;
+        sphere.position.z=2;
+
+        scene.add(sphere);
+//DOM에 render
+        document.getElementById("container").appendChild(renderer.domElement);
+        renderer.render(scene,camera);
+    </script>
+</body>
+</html>
