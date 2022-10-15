@@ -14,22 +14,26 @@
 </head>
 
 <body>
-    <div id="container"></div>
-    <script type="importmap" >
+    <div id="Stats-output"></div>
+    <div id="Container"></div>
+
+    <!-- <script type="importmap" >
         {
         "imports":{
-            "three":"../node_modules/three/build/three.module.js"
+            "three":"./node_modules/three/build/three.module.js"
         }
     }
     </script>
-    
+     -->
     <script type="module">
-        import * as THREE from 'three';
-        import {AxesHelper} from '../node_modules/three/src/helpers/AxesHelper.js'
+        import * as THREE from './node_modules/three/build/three.module.js'
+        import {AxesHelper} from './node_modules/three/src/helpers/AxesHelper.js'
+        import Stats from './node_modules/three/examples/jsm/libs/stats.module.js'
 
+//기본 setting
         const rd_w=640;
         const rd_h=480;
-//기본 setting
+
         var scene=new THREE.Scene();
         var camera=new THREE.PerspectiveCamera(45,rd_w/rd_h,10,200);
         var renderer=new THREE.WebGLRenderer();
@@ -87,8 +91,40 @@
         scene.add(spotLight);
 
 //DOM에 render
-        document.getElementById("container").appendChild(renderer.domElement);
+        document.getElementById("Container").appendChild(renderer.domElement);
+        //renderer.render(scene,camera); 애니메이션 시작 위해 밑 줄과 같이 변경
+
+//애니메이션 fps 그래프화 함수
+function initStats(){
+        //통계치 초기화 함수
+        var stats=new Stats();
+        stats.setMode(0); //setMode: 0 fps , 1 렌더링 시간 측정
+        stats.domElement.style.position='absolute';
+        stats.domElement.style.left='0px';
+        stats.domElement.style.top='0px';
+        document.getElementById('Stats-output').appendChild(stats.domElement);
+        return stats;
+}
+
+//requestAnimationFrame:브라우저 내 정해진 간격으로 함수가 호출되도록 지정
+function renderScene(){
+        stats.update();
+        
+        cube.rotation.x+=0.02;
+        cube.rotation.y+=0.02;
+        cube.rotation.z+=0.02;
+
+        var step=0;
+        step+=0.04; //구체 속도 정의
+        sphere.position.x=20+(10*(Math.cos(step)));
+        sphere.position.y=2+(10*Math.abs(Math.sin(step)));
+
+
+        requestAnimationFrame(renderScene); //애니메이션이 계속 지속되도록 하기 위해 재호출
         renderer.render(scene,camera);
+}
+        var stats=initStats();
+        renderScene();
     </script>
 </body>
 </html>
