@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>study</title>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.3/dat.gui.min.js"></script>
+</head>
+<body>
+    <div id="Stats-Output"></div>
+    <div id="Container"></div>
+
+    <script type="module">
+        import * as THREE from './node_modules/three/build/three.module.js'
+        import Stats from './node_modules/three/examples/jsm/libs/stats.module.js' 
+
+        function init(){
+            var stats=initStats();
+
+            var scene=new THREE.Scene();
+            var camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,1000);
+            var renderer=new THREE.WebGLRenderer();
+
+            renderer.setSize(window.innerWidth,window.innerHeight);
+            renderer.shadowMap.enabled=true;
+
+            camera.position.x=-30;
+            camera.position.y=40;
+            camera.position.z=40;
+            camera.lookAt(scene.position);
+            camera.up.set(0,-1,0);
+
+            var planeGeometry=new THREE.PlaneGeometry(60,20,1,1);
+            var planeMaterial=new THREE.MeshLambertMaterial({color:0xffffff});
+            var plane=new THREE.Mesh(planeGeometry,planeMaterial);
+            plane.receiveShadow=true;
+//plane rotate,positon setting
+            plane.rotation.x=-0.5*Math.PI;
+            plane.position.set(0,0,0);
+
+            scene.add(plane);
+//Add Light Sources
+            var ambientLight=new THREE.AmbientLight(0x0c0c0c);
+            scene.add(ambientLight);
+
+            var spotLight=new THREE.SpotLight(0xffffff);
+            spotLight.position.set(-40,60,-10);
+            spotLight.castShadow=true;
+            scene.add(spotLight);
+
+            document.getElementById('Container').appendChild(renderer.domElement);
+            
+//render func 호출
+            var step=0;
+            var controls=new function(){
+                this.rotationSpeed=0.02;
+                this.numberOfObjects=scene.children.length;
+
+                this.removeCube=function(){
+                    var allChildren=scene.children;
+                    var lastObject=allChildren[allChildren.length-1]; //Three.js는 자식 객체 리스트 관리
+                    if(lastObject instanceof THREE.Mesh){
+                        /*instanceOf: 생성자의 prototype 속성이 객체의 프로토타입 체인 어딘가 존재하는지 판별. 
+                        => THREE.Mesh에 lastobject가 존재한다면==THREE.Mesh의 instance라면
+                        THREE.Mesh인지 구별해 카메라, 조명 제거 x도록
+                        */
+                        scene.remove(lastObject);
+                        this.numberOfObjects=scene.children.length; //제거 후 자식 객체 수 갱신
+                    }
+                };
+                this.addCube=function(){
+                    var cubeSize=Math.ceil(Math.random()*3);
+                    var cubeGeometry=new THREE.BoxGeometry(cubeSize,cubeSize,cubeSize);
+                    var cubeMaterial=new THREE.MeshLambertMaterial({color:Math.random()*0xffffff});
+                    var cube=new THREE.Mesh(cubeGeometry,cubeMaterial);
+                    cube.castShadow=true;
+                    cube.name="cube-"+scene.children.length;
+//cube scene에 random하게 배치
+                    cube.position.x=-30 + Math.round((Math.random()*planeGeometry.parameters.width));
+                    cube.position.y= Math.round((Math.random()*5));
+                    cube.position.z=-10+Math.round((Math.random()*planeGeometry.parameters.height));
+
+                    scene.add(cube);
+                    this.numberOfObjects=scene.children.length;
+                    console.log(scene.getObjectByName("cube-10"));
+                };
+                this.outputObjects=function(){
+                    console.log(scene.children);
+                }
+            };//func controls
+
+            var gui=new dat.GUI();
+            gui.add(controls,'rotationSpeed',0,0.5);
+            gui.add(controls,'addCube');
+            gui.add(controls,'removeCube');
+            gui.add(controls,'outputObjects');
+            gui.add(controls,'numberOfObjects').listen();
+
+            render();
+
+            function render(){
+                stats.update();
+
+                //자기 축 따라서 cube Rotate
+                scene.traverse(function(e){
+                    //traverse: scene의 각 자식 객체마다 호출되는 traverse 함수에 인수로 함수 전달 가능
+                    //객체의 모든 자식 객체마다 호출. 전체 장면 그래프 탐색 가능
+                    if(e instanceof THREE.Mesh && e!=plane){
+                        //e==cube라면
+                        e.rotation.x+=controls.rotationSpeed;
+                        e.rotation.y+=controls.rotationSpeed;
+                        e.rotation.z+=controls.rotationSpeed;
+                    }
+                });
+                //requestAnimationFrame 통한 render
+                requestAnimationFrame(render);
+                renderer.render(scene,camera);
+            }
+            
+            function initStats(){
+                var stats=new Stats();
+                stats.setMode(0); //0:fps, 1: ms
+
+                stats.domElement.position='absolute';
+                stats.domElement.style.left='0px';
+                stats.domElement.style.top='0px';
+
+                document.getElementById('Stats-Output').appendChild(stats.domElement);
+
+                return stats;
+            }
+        }
+        window.onload=init;
+    </script>
+</body>
+</html>
