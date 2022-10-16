@@ -34,19 +34,17 @@
         var scene;
         var camera;
         var renderer;
-        const rd_w=window.innerWidth;
-        const rd_h=window.innerHeight;
 
         function init(){
                 var stats=initStats();
 
         //기본 setting
                 scene=new THREE.Scene();
-                camera=new THREE.PerspectiveCamera(45,rd_w/rd_h,0.1,1000);
+                camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,1000);
                 renderer=new THREE.WebGLRenderer();
 
                 renderer.setClearColor(new THREE.Color(0xEEEEEE,1.0)); //color, alpha
-                renderer.setSize(rd_w,rd_h);
+                renderer.setSize(window.innerWidth,window.innerHeight);
                 renderer.shadowMapEnabled=true; //default: 비활성화. 그림자 필요함 알림 + 그림자 드리울(receiveShadow)/표시할(castShadow) 객체 명시적 정의 + scene에서 그림자 그릴 광원 정하기
                 
         //평면 추가
@@ -155,9 +153,9 @@
                 }
         }
         function onResize(){
-                camera.aspect=rd_w/rd_h;
+                camera.aspect=window.innerWidth/window.innerHeight;
                 camera.updateProjectionMatrix();
-                renderer.setSize(rd_w,rd_h);
+                renderer.setSize(window.innerWidth,window.innerHeight);
         }
         window.onload=init;
 
