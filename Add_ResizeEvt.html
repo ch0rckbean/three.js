@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>threejs_study</title>
+    <style>
+        body{
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.3/dat.gui.min.js"></script>
+</head>
+
+<body>
+    <div id="Stats-output"></div>
+    <div id="Container"></div>
+
+    <!-- <script type="importmap" >
+        {
+        "imports":{
+            "three":"./node_modules/three/build/three.module.js"
+        }
+    }
+    </script> -->
+    
+    <script type="module">
+        import * as THREE from './node_modules/three/build/three.module.js'
+        import {AxesHelper} from './node_modules/three/src/helpers/AxesHelper.js'
+        import Stats from './node_modules/three/examples/jsm/libs/stats.module.js' 
+
+        var scene;
+        var camera;
+        var renderer;
+        const rd_w=window.innerWidth;
+        const rd_h=window.innerHeight;
+
+        function init(){
+                var stats=initStats();
+
+        //기본 setting
+                scene=new THREE.Scene();
+                camera=new THREE.PerspectiveCamera(45,rd_w/rd_h,0.1,1000);
+                renderer=new THREE.WebGLRenderer();
+
+                renderer.setClearColor(new THREE.Color(0xEEEEEE,1.0)); //color, alpha
+                renderer.setSize(rd_w,rd_h);
+                renderer.shadowMapEnabled=true; //default: 비활성화. 그림자 필요함 알림 + 그림자 드리울(receiveShadow)/표시할(castShadow) 객체 명시적 정의 + scene에서 그림자 그릴 광원 정하기
+                
+        //평면 추가
+                var planeGeometry=new THREE.PlaneGeometry(60,20,1,1);
+                var planeMaterial=new THREE.MeshLambertMaterial({color:0xffffff});  //Material 객체를 통해 색상,투명도 등 설정
+                var plane=new THREE.Mesh(planeGeometry,planeMaterial);  //Mesh  객체를 통한 결합
+                plane.receiveShadow=true;
+                
+                plane.rotation.x=-0.5*Math.PI;
+                plane.position.x=15;
+                plane.position.y=0;
+                plane.position.z=0;
+                
+                scene.add(plane);
+
+        //보조 축 추가
+                var axes=new THREE.AxesHelper(20); 
+                scene.add(axes);
+
+        //cube 추가
+                var cubeGeometry=new THREE.BoxGeometry(4,4,4);
+                var cubeMaterial=new THREE.MeshLambertMaterial({color:'#9999ff'});
+                var cube=new THREE.Mesh(cubeGeometry,cubeMaterial);
+                cube.castShadow=true; //cube의 그림자 표현할 것임(cast)
+
+                cube.position.x=-4;
+                cube.position.y=3;
+                cube.position.z=0;
+
+                scene.add(cube);
+
+        //sphere 추가
+                var sphereGeometry=new THREE.SphereGeometry(4,20,20);
+                var sphereMaterial=new THREE.MeshLambertMaterial({color:'#ffbcd9'});
+                var sphere=new THREE.Mesh(sphereGeometry,sphereMaterial);
+
+                sphere.position.x=20;
+                sphere.position.y=0;
+                sphere.position.z=2;
+                sphere.castShadow=true; //sphere의 그림자 표현할 것임(cast)
+
+                scene.add(sphere);
+
+                //cmr setting
+                camera.position.x=-30;
+                camera.position.y=40;
+                camera.position.z=30;
+                camera.lookAt(scene.position);
+
+        //Light Source 추가 => material에 따라 광원에 대해 다르게 반응하기에 변화 x(MeshBasicMaterial=>Lambert/Phong Material)
+                // add subtle ambient lighting
+                var ambientLight = new THREE.AmbientLight(0x0c0c0c);
+                scene.add(ambientLight);
+
+                var spotLight=new THREE.SpotLight(0xffffff);
+                spotLight.position.set(-40,60,-10);
+                spotLight.castShadow=true; //scene의 어떤 광원에서 그림자 그릴지
+                scene.add(spotLight);
+
+        //DOM에 render
+                document.getElementById("Container").appendChild(renderer.domElement);
+                //renderer.render(scene,camera); 애니메이션 시작 위해 밑 줄과 같이 변경
+
+        //render function 호출        
+                var step=0;
+
+        //dat.GUI 통해 속도 조절할 수 있도록
+                var controls=new function(){
+                        //초기값 설정
+                        this.rotationSpeed=0.02; 
+                        this.bouncingSpeed=0.03;
+                }
+                
+                var gui=new dat.GUI(); //속도 조절 gui 띄움
+                //control panel 추가 . 0~0.5 의 값 입력받음
+                gui.add(controls,'rotationSpeed',0,0.5);
+                gui.add(controls,'bouncingSpeed',0,0.5);
+
+                render();
+
+        //requestAnimationFrame:브라우저 내 정해진 간격으로 함수가 호출되도록 지정
+                function render(){
+                    stats.update();
+                    
+                    cube.rotation.x+=controls.rotationSpeed;
+                    cube.rotation.y+=controls.rotationSpeed;
+                    cube.rotation.z+=controls.rotationSpeed;
+
+                    step+=controls.bouncingSpeed; //구체 속도 정의. bouncingSpeed만큼 증가
+                    sphere.position.x=20+(10*(Math.cos(step)));
+                    sphere.position.y=2+(10*Math.abs(Math.sin(step)));
+
+                    requestAnimationFrame(render); //애니메이션이 계속 지속되도록 하기 위해 재호출
+                    renderer.render(scene,camera);
+                }
+                //애니메이션 fps 그래프화 함수
+                function initStats(){
+                    //통계치 초기화 함수
+                    var stats=new Stats();
+                    stats.setMode(0); //setMode: 0 fps , 1 렌더링 시간 측정
+                    stats.domElement.style.position='absolute';
+                    stats.domElement.style.left='0px';
+                    stats.domElement.style.top='0px';
+                    document.getElementById('Stats-output').appendChild(stats.domElement);
+                    return stats;
+                }
+        }
+        function onResize(){
+                camera.aspect=rd_w/rd_h;
+                camera.updateProjectionMatrix();
+                renderer.setSize(rd_w,rd_h);
+        }
+        window.onload=init;
+
+//브라우저 크기 변경에 따른 자동 조정
+        window.addEventListener('resize',onResize,false)
+    </script>
+</body>
+</html>
