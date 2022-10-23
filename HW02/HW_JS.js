@@ -8,8 +8,8 @@ var myScene;
 
 //*renderer setting    
 myRenderer=new THREE.WebGL1Renderer();
-const rd_w=640; //window.innerWidth;
-const rd_h=480; //window.innerHeight;
+const rd_w=window.innerWidth;
+const rd_h=window.innerHeight;
 myRenderer.setSize(rd_w,rd_h);
 myRenderer.setViewport(0,0,rd_w,rd_h);
 const container=document.getElementById('myContainer');
@@ -76,9 +76,10 @@ console.log(myCamera.position.distanceTo(myMesh.position));
 animate();
 //*create animation
 function animate(){
-requestAnimationFrame(animate);
-// controls.update();
-myRenderer.render(myScene,myCamera);
+    
+    requestAnimationFrame(animate);
+    // controls.update();
+    myRenderer.render(myScene,myCamera);
 }
 
 //*register events to keyboard and mouse
@@ -86,7 +87,6 @@ document.addEventListener('keydown',keyDownHandler);
 // myRenderer.domElement.onkeyup=keyUpHandler;
 // myRenderer.domElement.oncontextmenu=RbtnHandler;
 
-myRenderer.domElement.onpointermove=MouseMoveHandler;
 myRenderer.domElement.onpointerup=mouseUpHandler;
 myRenderer.domElement.onpointercancel=mouseUpHandler;
 myRenderer.domElement.onpointerout=mouseUpHandler;
@@ -119,16 +119,17 @@ function keyDownHandler(e){
 
 //*Object Transform Function
 let mouse_btn_flag=false;  //mouse down 여부
+
 function obj_MouseDownHandler(e){
     if(e.pointerType =='mouse'){
         mouse_btn_flag=true;     
-   
-        // myRenderer.domElement.onpointerdown=obj_MouseDownHandler;
+
+        myRenderer.domElement.onpointerdown=obj_MouseDownHandler;
         if(e.button==0){
         //LBtn
 //*MouseEvent(1-1)  Move Object: Rotate by Lbtn mouse drag
             console.log('objM_Mouse Left Btn Down');
-       
+           
             MouseMoveHandler(e);
             
         }
@@ -153,13 +154,16 @@ function compute_pos_ss2ws(x_ss,y_ss){
     return new THREE.Vector3(x_ss/rd_w*2-1, -y_ss/rd_h*2+1,-1).unproject(myCamera);
 }
 
+let mouseX,mouseY=0;
 function MouseMoveHandler(e){
     //마우스 움직일 시 함수
     //L, R 버튼 if문으로 구분해서 추가하기
     
     if(e.pointerType=='mouse'){
-            mouse_btn_flag=true;
-      
+            if(!mouse_btn_flag){
+                return;
+            }
+           
             const myPosPS=new THREE.Vector3(
                 e.clientX/rd_w * 2 - 1,  //0~ 1 -> 0~ 2 , -1 ==1  => x를 -1~ 1로 매핑
                 -e.clientY/rd_h*2+1, //screen(아래쪽) 과 proj y방향 반대
@@ -167,16 +171,15 @@ function MouseMoveHandler(e){
             const myPosWS=myPosPS.clone();
             myPosWS.unproject(myCamera);
             
-            // console.log("Mouse Pos PS:",myPosPS.x, myPosPS.y, myPosPS.z);
-            // console.log("Mouse Pos WS:",myPosWS.x, myPosWS.y, myPosWS.z);
+            console.log("Mouse Pos PS:",myPosPS.x, myPosPS.y, myPosPS.z);
+            console.log("Mouse Pos WS:",myPosWS.x, myPosWS.y, myPosWS.z);
 
-            if(mouse_btn_flag){ //마우스 다운이면
+            
+            if(mouse_btn_flag==true &e.button==1  ){ 
+                    //마우스 Lbtn 다운이면
+                myRenderer.domElement.onpointermove=MouseMoveHandler;
+
                 let posNp=compute_pos_ss2ws(e.clientX, e.clientY);
-               
-                x_prev=e.clientX;
-                y_prev=e.clientY;
-             
-
                 // myMesh.setRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4));
             
                 // let matLocal=new THREE.Matrix4();
@@ -184,18 +187,28 @@ function MouseMoveHandler(e){
                 // matLocal.premultiply(matR);
                 // myMesh.matrix=matLocal.clone();
                 // myMesh.matrixAutoUpdate=false;
-                // console.log(myMesh.matrix.elements);
-
-
-              
+               
+                myMesh.rotation.x+=myPosPS.y/10 *-1;
+                myMesh.rotation.y+=myPosPS.x/10 *-1;
+                // myMesh.rotation.z+=0.02;
+                console.log(myMesh.matrix.elements);
+                console.log(e.button);
+                
+                x_prev=e.clientX;
+                y_prev=e.clientY;
+                
             }
-              
-            
+            else if(mouse_btn_flag==true & e.button==2){
+
+            }
          }
     }
 function mouseUpHandler(e){
+    e.preventDefault();
     mouse_btn_flag=false;
+   
 }
+
 //*Camera Transform Function
 function cmr_MouseDownHandler(e){
     if(e.pointerType =='mouse'){
@@ -220,9 +233,17 @@ function cmr_MouseDownHandler(e){
 }
 
 
+
+
+
+function onResize(){
+    myCamera.aspect=window.innerWidth/window.innerHeight;
+    myCamera.updateProjectionMatrix();
+    myRenderer.setSize(window.innerWidth,window.innerHeight);
+}
+window.addEventListener('resize',onResize);
+
 //MouseEvent(2-1)  Move Camera: Rotate by Lbtn mouse drag
 //MouseEvent(2-2)  Move Camera : Move the camera by mouse wheels
 //MouseEvent(2-3)  Move Camera : Move the camera parallel to the image plane by by Rbtn mouse drag
 
-
-//나중에 rd 사이즈 inner로 바꾸고 리사이즈 이벤트 추가하기
