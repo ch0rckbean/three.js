@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Mesh } from 'three';
 // import {OrbitControls} from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
 import {AxesHelper} from '../node_modules/three/src/helpers/AxesHelper.js'
 
@@ -8,15 +9,15 @@ var myScene;
 
 //*renderer setting    
 myRenderer=new THREE.WebGL1Renderer();
-const rd_w=window.innerWidth;
-const rd_h=window.innerHeight;
+let rd_w=window.innerWidth;
+let rd_h=window.innerHeight;
 myRenderer.setSize(rd_w,rd_h);
 myRenderer.setViewport(0,0,rd_w,rd_h);
 const container=document.getElementById('myContainer');
 container.appendChild(myRenderer.domElement);
 //*camera setting
 myCamera=new THREE.PerspectiveCamera(45,rd_w/rd_h,1,500);
-myCamera.position.set(0,0,20);
+myCamera.position.set(0,0,50);
 myCamera.up.set(0,1,0);
 myCamera.lookAt(0,0,0);
 //*scene setting
@@ -56,7 +57,7 @@ cubeGeo.setAttribute('position',new THREE.BufferAttribute(pointsArray,3));
 cubeGeo.setIndex(indicies);
 
 const cubeMaterial=new THREE.MeshBasicMaterial( { color: '#38E54D', wireframe:true } );
-const myMesh = new THREE.Mesh( cubeGeo, cubeMaterial );
+let myMesh = new THREE.Mesh( cubeGeo, cubeMaterial );
 
 myScene.add(myMesh);
 // controls.update();
@@ -133,7 +134,7 @@ function obj_MouseDownHandler(e){
         //MouseEvent(1-2)  Move Object: Move the cube parallel to the image plane by Rbtn mouse drag
             console.log('objM_Mouse Right Btn Down');
             // myMesh.matrixAutoUpdate=false;
-
+  
             MouseMoveHandler(e);
 
         }
@@ -142,6 +143,7 @@ function obj_MouseDownHandler(e){
 
 let x_prev=rd_w/2;
 let y_prev=rd_h/2;
+
 //Compute SS -> WS position
 function compute_pos_ss2ws(x_ss,y_ss){
     return new THREE.Vector3(x_ss/rd_w*2-1, -y_ss/rd_h*2+1,-1).unproject(myCamera);
@@ -155,58 +157,43 @@ function MouseMoveHandler(e){
             if(!mouse_btn_flag){
                 return;
             }
-           
+            
             const myPosPS=new THREE.Vector3(
                 e.clientX/rd_w * 2 - 1,  //0~ 1 -> 0~ 2 , -1 ==1  => x를 -1~ 1로 매핑
                 -e.clientY/rd_h*2+1, //screen(아래쪽) 과 proj y방향 반대
                 -1);
             const myPosWS=myPosPS.clone();
-            myPosWS.unproject(myCamera);
+            myPosWS.unproject(myCamera);//WS에 매핑 위한 unprojection : SS -> WS로 inverse (view, projection) T 해줌
             
             console.log("Mouse Pos PS:",myPosPS.x, myPosPS.y, myPosPS.z);
             console.log("Mouse Pos WS:",myPosWS.x, myPosWS.y, myPosWS.z);
-            console.log(e.button);
+            // console.log(e.button);
             
-            if(mouse_btn_flag & e.button<=0 ){ //마우스 Lbtn 다운이면
+            if(mouse_btn_flag && e.button<=0 ){ //마우스 Lbtn 다운이면
                 myRenderer.domElement.onpointermove=MouseMoveHandler;
             //내꺼
-                let posNp=compute_pos_ss2ws(e.clientX, e.clientY);
-                myMesh.rotation.x+=(e.offsetX/(rd_w*30)*Math.PI/4);
-                myMesh.rotation.y+=(e.offsetY/(rd_h*30)*Math.PI/4);
+                let myPosNp=compute_pos_ss2ws(e.clientX, e.clientY);
+                
+                myMesh.rotation.y+=(myPosPS.x/rd_w*20);
+                myMesh.rotation.x+=-(myPosPS.y/rd_h*20);
                 // myMesh.rotation.z+=0.02;
+                
                 console.log(myMesh.matrix.elements);
                 console.log(myMesh.rotation);
-                console.log(myPosPS.x, myPosPS.y);
-                
-                // x_prev=e.clientX;
-                // y_prev=e.clientY;
+                console.log('left');
+                      
+                //한계: Euler 연산을 사용했기에 Gimbal Lock 이슈가 있을 수 있음
 
-            // //스택
-            //     var axisX=new THREE.Vector3(1,0,0);
-            //     var axisY=new THREE.Vector3(0,1,0);
-            //     var axisZ=new THREE.Vector3(0,0,1);
-                
-            //실습
-                // myMesh.setRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4));
-                // let matLocal=new THREE.Matrix4();
-                // const matR=new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0,1,0),Math.PI/4); 
-                // matLocal.premultiply(matR);
-                // myMesh.matrix=matLocal.clone();
-                // myMesh.matrixAutoUpdate=false;
-               
-
-
-
-                
+            
             }
             
-            else if(mouse_btn_flag & e.button==2){//R마우스 Rbtn 다운이면
+            if( mouse_btn_flag && e.button==2 ){//R마우스 Rbtn 다운이면
+                console.log('right');
                 myMesh.quaternion.copy(myCamera.quaternion);
-
-                myMesh.position.x=myPosPS.x;
-                myMesh.position.y=myPosPS.y;
-
-                console.log( myMesh.position.x);
+                
+                myMesh.translateX(myPosPS.x);
+                myMesh.translateY(myPosPS.y);
+                //z축(카메라)에 평행해야 하므로 translateX,translateY만 적용
             }
          }
     }
