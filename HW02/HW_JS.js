@@ -16,7 +16,7 @@ const container=document.getElementById('myContainer');
 container.appendChild(myRenderer.domElement);
 //*camera setting
 myCamera=new THREE.PerspectiveCamera(45,rd_w/rd_h,1,500);
-myCamera.position.set(0,0,50);
+myCamera.position.set(0,0,20);
 myCamera.up.set(0,1,0);
 myCamera.lookAt(0,0,0);
 //*scene setting
@@ -48,12 +48,6 @@ const indicies=[
     2,7,6, 2,6,3, //bottom
 ]
 
-    // 0,2,1, 2,3,1, //front
-    // 4,5,1, 5,0,1,  //right
-    // 7,6,2,  6,3,2,  //left
-    // 4,6,5, 6,7,5,  //back
-    // 5,7,0,  7,2,0,  //top
-    // 1,3,4,  3,6,4,  //bottom     
     
 const cubeGeo=new THREE.BufferGeometry();
 const pointsArray=new Float32Array(points);
@@ -129,7 +123,8 @@ function obj_MouseDownHandler(e){
         //LBtn
 //*MouseEvent(1-1)  Move Object: Rotate by Lbtn mouse drag
             console.log('objM_Mouse Left Btn Down');
-           
+            // myMesh.matrixAutoUpdate=false;
+
             MouseMoveHandler(e);
             
         }
@@ -137,10 +132,8 @@ function obj_MouseDownHandler(e){
         //RBtn
         //MouseEvent(1-2)  Move Object: Move the cube parallel to the image plane by Rbtn mouse drag
             console.log('objM_Mouse Right Btn Down');
-            
-            
-            
-            
+            // myMesh.matrixAutoUpdate=false;
+
             MouseMoveHandler(e);
 
         }
@@ -154,12 +147,11 @@ function compute_pos_ss2ws(x_ss,y_ss){
     return new THREE.Vector3(x_ss/rd_w*2-1, -y_ss/rd_h*2+1,-1).unproject(myCamera);
 }
 
-let mouseX,mouseY=0;
 function MouseMoveHandler(e){
     //마우스 움직일 시 함수
     //L, R 버튼 if문으로 구분해서 추가하기
     
-    if(e.pointerType=='mouse'){
+    if(e.pointerType=='mouse'  ){
             if(!mouse_btn_flag){
                 return;
             }
@@ -173,33 +165,48 @@ function MouseMoveHandler(e){
             
             console.log("Mouse Pos PS:",myPosPS.x, myPosPS.y, myPosPS.z);
             console.log("Mouse Pos WS:",myPosWS.x, myPosWS.y, myPosWS.z);
-
+            console.log(e.button);
             
-            if(mouse_btn_flag==true &e.button==1  ){ 
-                    //마우스 Lbtn 다운이면
+            if(mouse_btn_flag & e.button<=0 ){ //마우스 Lbtn 다운이면
                 myRenderer.domElement.onpointermove=MouseMoveHandler;
-
+            //내꺼
                 let posNp=compute_pos_ss2ws(e.clientX, e.clientY);
+                myMesh.rotation.x+=(e.offsetX/(rd_w*30)*Math.PI/4);
+                myMesh.rotation.y+=(e.offsetY/(rd_h*30)*Math.PI/4);
+                // myMesh.rotation.z+=0.02;
+                console.log(myMesh.matrix.elements);
+                console.log(myMesh.rotation);
+                console.log(myPosPS.x, myPosPS.y);
+                
+                // x_prev=e.clientX;
+                // y_prev=e.clientY;
+
+            // //스택
+            //     var axisX=new THREE.Vector3(1,0,0);
+            //     var axisY=new THREE.Vector3(0,1,0);
+            //     var axisZ=new THREE.Vector3(0,0,1);
+                
+            //실습
                 // myMesh.setRotationFromQuaternion(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 4));
-            
                 // let matLocal=new THREE.Matrix4();
                 // const matR=new THREE.Matrix4().makeRotationAxis(new THREE.Vector3(0,1,0),Math.PI/4); 
                 // matLocal.premultiply(matR);
                 // myMesh.matrix=matLocal.clone();
                 // myMesh.matrixAutoUpdate=false;
                
-                myMesh.rotation.x+=myPosPS.y/10 *-1;
-                myMesh.rotation.y+=myPosPS.x/10 *-1;
-                // myMesh.rotation.z+=0.02;
-                console.log(myMesh.matrix.elements);
-                console.log(e.button);
-                
-                x_prev=e.clientX;
-                y_prev=e.clientY;
+
+
+
                 
             }
-            else if(mouse_btn_flag==true & e.button==2){
+            
+            else if(mouse_btn_flag & e.button==2){//R마우스 Rbtn 다운이면
+                myMesh.quaternion.copy(myCamera.quaternion);
 
+                myMesh.position.x=myPosPS.x;
+                myMesh.position.y=myPosPS.y;
+
+                console.log( myMesh.position.x);
             }
          }
     }
