@@ -77,6 +77,7 @@ function animate(){
 
 //*register events to keyboard and mouse
 document.addEventListener('keydown',keyDownHandler);
+
 // myRenderer.domElement.onkeyup=keyUpHandler;
 // myRenderer.domElement.oncontextmenu=RbtnHandler;
 
@@ -87,7 +88,7 @@ myRenderer.domElement.onpointercancel=mouseUpHandler;
 myRenderer.domElement.onpointerout=mouseUpHandler;
 myRenderer.domElement.onpointerleave=mouseUpHandler;
 
-//*Check MouseBtn
+// *Check MouseBtn
 // document.addEventListener('mouseup', function(e) {
 //     var e = e || window.event;
 //     var btnCode = e.button;
@@ -109,17 +110,11 @@ function keyDownHandler(e){
     else if(e.key=='C' | e.key=='c'){
         console.log('Cmr Transform');
         myRenderer.domElement.onpointerdown=cmr_MouseDownHandler;
+        myRenderer.domElement.onwheel=cmr_MouseScrollHandler;
         cmr_MouseDownHandler(e);
+        cmr_MouseScrollHandler(e);
     }
 }
-// function removeEvt(){
-//     console.log(evtArr);
-//     evtArr.splice(1,2);
-//     if (evtArr.length>=2){
-//         myRenderer.domElement.removeEventListener('mousedown',obj_MouseDownHandler);
-//         console.log(evtArr);
-//     }
-// }
 
 //*Object Transform Function
 let mouse_btn_flag=false;  //mouse down 여부
@@ -137,9 +132,8 @@ function obj_MouseDownHandler(e){
         }
         else if(e.button==2){
         //RBtn
-        //MouseEvent(1-2)  Move Object: Move the cube parallel to the image plane by Rbtn mouse drag
+//*MouseEvent(1-2)  Move Object: Move the cube parallel to the image plane by Rbtn mouse drag
             console.log('objM_Mouse Right Btn Down');
-  
             obj_MouseMoveHandler(e);
         }
     }
@@ -173,7 +167,7 @@ function obj_MouseMoveHandler(e){
         console.log("Mouse Pos WS:",myPosWS.x, myPosWS.y, myPosWS.z);
         // console.log(e.button);
             
-        if(mouse_btn_flag && e.button<=0 ){ //마우스 Lbtn 다운이면
+        if( e.button<=0 ){ //마우스 Lbtn 다운이면
             let myPosNp=compute_pos_ss2ws(e.clientX, e.clientY);
 
             myMesh.rotation.x+=-(myPosPS.y/rd_h*30);
@@ -184,7 +178,7 @@ function obj_MouseMoveHandler(e){
             console.log(myMesh.rotation);
             console.log('left');
             
-            //한계: Euler 연산을 사용했기에 Gimbal Lock 이슈가 있을 수 있음. cmr, Rbtn 클릭시에도 obj_Lbtn event가 실행 됨
+            //한계: Euler 연산을 사용했기에 Gimbal Lock 이슈가 있을 수 있음. Rbtn 클릭시에도 obj_Lbtn event가 같이 실행 됨
 
         }
             
@@ -215,23 +209,19 @@ function cmr_MouseDownHandler(e){
 
         if(mouse_btn_flag=true && e.button==0){
         //LBtn
-//*MouseEvent(1-1)  Move Object: Rotate by Lbtn mouse drag
+//*MouseEvent(2-1)  Move Camera: Rotate by Lbtn mouse drag
             console.log('cmrM_Mouse Left Btn Down');
-
             cmr_MouseMoveHandler(e);
             
         }
         else if(mouse_btn_flag=true && e.button==2){
         //RBtn
-//*MouseEvent(1-2)  Move Object: Move the cube parallel to the image plane by Rbtn mouse drag
+//*MouseEvent(2-3)  Move Camera : Move the camera parallel to the image plane by by Rbtn mouse drag
             console.log('cmrM_Mouse Right Btn Down');
-
             cmr_MouseMoveHandler(e);
         }
     }
 }
-
-
 
 //*Camera Transform Function
 function cmr_MouseMoveHandler(e){
@@ -239,6 +229,7 @@ function cmr_MouseMoveHandler(e){
         if(!mouse_btn_flag){
             return;
         }
+        console.log(e.button);
         myRenderer.domElement.onpointermove=cmr_MouseMoveHandler;
         
         const myPosPS=new THREE.Vector3(
@@ -250,30 +241,43 @@ function cmr_MouseMoveHandler(e){
 
         if(e.button<=0){
         //LBtn
-//*MouseEvent(2-1)  Move Camera: Rotate by Lbtn mouse drag
             console.log('cmrM_Mouse Left Btn Move');
             myCamera.rotation.x-=myPosWS.y*Math.PI/45;
             myCamera.rotation.y+=myPosWS.x*Math.PI/45;
-            myCamera.rotation.z+=myPosWS.y*Math.PI/90;
-            
+            myCamera.rotation.z+=myPosWS.y*Math.PI/45;
+
             console.log(myCamera.matrix.elements);
         }
 
-        else if(e.button==1 ){
-        //Wheel
-            console.log('cmrM_Mouse Middle Btn(Wheel) Down');
-
-        }
         else if(e.button==2){
         //RBtn
         // myCamera.quaternion.copy(myCamera.quaternion);  //obj가 카메라의 z축과 평행하게 하기 위해
+        
+            myCamera.rotation.x-=myPosWS.y*Math.PI/45;
+            myCamera.rotation.y+=myPosWS.x*Math.PI/45;
             console.log('cmrM_Mouse Right Btn Down');
-
         }
     }
 }
 
 
+// *MouseEvent(2-2)  Move Camera : Move the camera by mouse wheels
+function cmr_MouseScrollHandler(e){
+    //*check mouse scroll amount
+    var scrDir=e.deltaY;
+    console.log(scrDir); //150,-150
+    
+    if(scrDir<=-150){
+        console.log('get bigger');
+        // myCamera.position.z+=0.3;
+        myCamera.position.z-=rd_w/rd_h;
+    }
+    else if(scrDir>=150){
+        console.log('get smaller');
+        myCamera.position.z+=rd_w/rd_h;
+    }
+    console.log(rd_w/rd_h);   
+}
 
 
 
@@ -284,6 +288,4 @@ function onResize(){
 }
 window.addEventListener('resize',onResize);
 
-//MouseEvent(2-2)  Move Camera : Move the camera by mouse wheels
-//MouseEvent(2-3)  Move Camera : Move the camera parallel to the image plane by by Rbtn mouse drag
 
