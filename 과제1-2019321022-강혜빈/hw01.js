@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Camera, Mesh } from 'three';
-import {AxesHelper} from 'three/src/helpers/AxesHelper.js'
+import {AxesHelper} from '../node_modules/three/src/helpers/AxesHelper.js'
 
 var myRenderer;
 var myCamera;
@@ -24,6 +24,7 @@ myScene=new THREE.Scene();
 //*보조축 추가
 var axes=new THREE.AxesHelper(20); 
 myScene.add(axes);  
+myScene.background = new THREE.Color('#2E0249');
 
 // const controls=new OrbitControls(myCamera,myRenderer.domElement);
 
@@ -54,7 +55,7 @@ const pointsArray=new Float32Array(points);
 cubeGeo.setAttribute('position',new THREE.BufferAttribute(pointsArray,3));
 cubeGeo.setIndex(indicies);
 
-const cubeMaterial=new THREE.MeshBasicMaterial( { color: '#FD841F', wireframe:true } );
+const cubeMaterial=new THREE.MeshBasicMaterial( { color: '#37E2D5', wireframe:true } );
 let myMesh = new THREE.Mesh( cubeGeo, cubeMaterial );
 
 myScene.add(myMesh);
@@ -101,14 +102,18 @@ function keyDownHandler(e){
     
     if(e.key=='O' | e.key=='o'){
         console.log('Obj Transform');
-        myRenderer.domElement.onpointerdown=obj_MouseDownHandler;
-        obj_MouseDownHandler(e);
+        myRenderer.domElement.onpointerdown=objL_MouseDownHandler;
+        myRenderer.domElement.oncontextmenu=objR_MouseDownHandler;
+        objL_MouseDownHandler(e);
+        objR_MouseDownHandler(e);
     }   
     else if(e.key=='C' | e.key=='c'){
         console.log('Cmr Transform');
-        myRenderer.domElement.onpointerdown=cmr_MouseDownHandler;
+        myRenderer.domElement.onpointerdown=cmrL_MouseDownHandler;
         myRenderer.domElement.onwheel=cmr_MouseScrollHandler;
-        cmr_MouseDownHandler(e);
+        myRenderer.domElement.oncontextmenu=cmrR_MouseDownHandler;
+        cmrL_MouseDownHandler(e);
+        cmrR_MouseDownHandler(e);
         cmr_MouseScrollHandler(e);
     }
 }
@@ -116,23 +121,26 @@ function keyDownHandler(e){
 //*Object Transform Function
 let mouse_btn_flag=false;  //mouse down 여부
 
-function obj_MouseDownHandler(e){
+//*MouseEvent(1-1)  Move Object: Rotate by Lbtn mouse drag
+function objL_MouseDownHandler(e){
     if(e.pointerType =='mouse'){
         mouse_btn_flag=true;     
-        myRenderer.domElement.onpointerdown=obj_MouseDownHandler;
+        myRenderer.domElement.onpointerdown=objL_MouseDownHandler;
         if(e.button==0){
         //LBtn
-//*MouseEvent(1-1)  Move Object: Rotate by Lbtn mouse drag
             console.log('objM_Mouse Left Btn Down');
-            obj_MouseMoveHandler(e);
+            objL_MouseMoveHandler(e);
         }
-        else if(e.button==2){
-        //RBtn
-//*MouseEvent(1-2)  Move Object: Move the cube parallel to the image plane by Rbtn mouse drag
-            console.log('objM_Mouse Right Btn Down');
-            obj_MouseMoveHandler(e);
-       }
     }
+}
+//*MouseEvent(1-2)  Move Object: Move the cube parallel to the image plane by Rbtn mouse drag
+function objR_MouseDownHandler(e){
+    if(e.button==2){
+        //RBtn
+        myRenderer.domElement.oncontextmenu=objR_MouseDownHandler;
+        console.log('objM_Mouse Right Btn Down');
+        objR_MouseMoveHandler(e);
+       }
 }
 
 //Compute SS -> WS position
@@ -140,14 +148,11 @@ function compute_pos_ss2ws(x_ss,y_ss){
     return new THREE.Vector3(x_ss/rd_w*2-1, -y_ss/rd_h*2+1,-1).unproject(myCamera);
 }
 
-function obj_MouseMoveHandler(e){
+function objL_MouseMoveHandler(e){
     //마우스 움직일 시 함수
     //L, R 버튼 if문으로 구분
     if(e.pointerType=='mouse'){
-        // if(!mouse_btn_flag){
-        //     return;
-        // }
-        myRenderer.domElement.onpointermove=obj_MouseMoveHandler;
+        myRenderer.domElement.onpointermove=objL_MouseMoveHandler;
         const myPosPS=new THREE.Vector3(
             e.clientX/rd_w * 2 - 1,  //0~ 1 -> 0~ 2 , -1 ==1  => x를 -1~ 1로 매핑
             -e.clientY/rd_h*2+1, //screen(아래쪽) 과 proj y방향 반대
@@ -159,7 +164,7 @@ function obj_MouseMoveHandler(e){
         // console.log("Mouse Pos WS:",myPosWS.x, myPosWS.y, myPosWS.z);
         // console.log(e.button);
             
-        if(mouse_btn_flag&& e.button<=0 ){ //마우스 Lbtn 다운이면       
+        if(mouse_btn_flag&&e.button<=0 ){ //마우스 Lbtn 다운이면       
             myMesh.rotation.x+=-(myPosPS.y/rd_h*30);
             myMesh.rotation.y+=(myPosPS.x/rd_w*30);
            
@@ -167,48 +172,54 @@ function obj_MouseMoveHandler(e){
             console.log('left');
             //한계: Euler 연산을 사용했기에 Gimbal Lock 이슈가 있을 수 있음. Rbtn 클릭시에도 obj_Lbtn event가 같이 실행 됨
         }
-        else if(mouse_btn_flag&& e.button==2 ){//R마우스 Rbtn 다운이면
-            console.log('right');
-            myMesh.quaternion.copy(myCamera.quaternion);
-            
-            myMesh.translateX(myPosPS.x);
-            myMesh.translateY(myPosPS.y);
-            console.log(myMesh.matrix.elements);
-            //z축(카메라)에 평행해야 하므로 translateX,translateY만 적용
-        }
-         }
     }
+}
+function objR_MouseMoveHandler(e){
+    myRenderer.domElement.onpointermove=objR_MouseMoveHandler;
+    const myPosPS=new THREE.Vector3(
+        e.clientX/rd_w * 2 - 1,  //0~ 1 -> 0~ 2 , -1 ==1  => x를 -1~ 1로 매핑
+        -e.clientY/rd_h*2+1, //screen(아래쪽) 과 proj y방향 반대
+        -1);
+    const myPosWS=myPosPS.clone();
+    myPosWS.unproject(myCamera);
+    // console.log('right');
+    if(mouse_btn_flag){
+        myMesh.translateX(myPosPS.x/5);
+        myMesh.translateY(myPosPS.y/5);
+        myMesh.position.z=(0);
+    }
+    // console.log(myMesh.matrix.elements);
+}
 
 //*Camera Mode
-function cmr_MouseDownHandler(e){
+//*MouseEvent(2-1)  Move Camera: Rotate by Lbtn mouse drag
+function cmrL_MouseDownHandler(e){
     if(e.pointerType=='mouse'){
         mouse_btn_flag=true;     
-        myRenderer.domElement.onpointerdown=cmr_MouseDownHandler;
+        myRenderer.domElement.onpointerdown=cmrL_MouseDownHandler;
 
-        if(mouse_btn_flag=true && e.button==0){
+        // if(e.button==0){
         //LBtn
-//*MouseEvent(2-1)  Move Camera: Rotate by Lbtn mouse drag
             console.log('cmrM_Mouse Left Btn Down');
-            cmr_MouseMoveHandler(e);
-            
-        }
-        else if(mouse_btn_flag=true && e.button==2){
-        //RBtn
-//*MouseEvent(2-3)  Move Camera : Move the camera parallel to the image plane by Rbtn mouse drag
-            console.log('cmrM_Mouse Right Btn Down');
-            cmr_MouseMoveHandler(e);
-        }
+            cmrL_MouseMoveHandler(e);
+        // }
     }
 }
 
-//*Camera Transform Function
-function cmr_MouseMoveHandler(e){
+//*MouseEvent(2-3)  Move Camera : Move the camera parallel to the image plane by Rbtn mouse drag
+function cmrR_MouseDownHandler(e){
+    if(e.button==2){
+        myRenderer.domElement.oncontextmenu=cmrR_MouseDownHandler;
+        console.log('cmrM_Mouse Right Btn Down');
+        cmrR_MouseMoveHandler(e);
+    }
+}
+
+
+function cmrL_MouseMoveHandler(e){
     if(e.pointerType=='mouse'){
-        if(!mouse_btn_flag){
-            return;
-        }
-        console.log(e.button);
-        myRenderer.domElement.onpointermove=cmr_MouseMoveHandler;
+        
+        myRenderer.domElement.onpointermove=cmrL_MouseMoveHandler;
         
         const myPosPS=new THREE.Vector3(
             e.clientX/rd_w * 2 - 1,  //0~ 1 -> 0~ 2 , -1 ==1  => x를 -1~ 1로 매핑
@@ -226,16 +237,27 @@ function cmr_MouseMoveHandler(e){
 
             console.log(myCamera.matrix.elements);
         }
-
-        else if(mouse_btn_flag&& e.button==2){
-        //RBtn
-            myCamera.translateX(-myPosPS.x/10);
-            myCamera.translateY(-myPosPS.y/10);
-            console.log('cmrM_Mouse Right Btn Down');
-        }
     }
 }
 
+function cmrR_MouseMoveHandler(e){
+    myRenderer.domElement.onpointermove=cmrR_MouseMoveHandler;
+    const myPosPS=new THREE.Vector3(
+        e.clientX/rd_w * 2 - 1,  //0~ 1 -> 0~ 2 , -1 ==1  => x를 -1~ 1로 매핑
+        -e.clientY/rd_h*2+1, //screen(아래쪽) 과 proj y방향 반대
+        -1);
+    const myPosWS=myPosPS.clone();
+    myPosWS.unproject(myCamera);
+    //RBtn
+    if(mouse_btn_flag){
+
+        myCamera.translateX(-myPosPS.x/5);
+        myCamera.translateY(-myPosPS.y/5);
+        myCamera.position.z=(0);
+
+        console.log('cmrM_Mouse Right Btn Down');
+}
+}
 // *MouseEvent(2-2)  Move Camera : Move the camera by mouse wheels
 function cmr_MouseScrollHandler(e){
     //*check mouse scroll amount
@@ -251,14 +273,14 @@ function cmr_MouseScrollHandler(e){
         console.log('get smaller');
         myCamera.position.z+=rd_w/rd_h;
     }
-    console.log(rd_w/rd_h);   
+    console.log(myCamera.position.z);   
+    // console.log(myCamera.position.y);   
 }
 
-
+//*add resize event
 function onResize(){
     myCamera.aspect=window.innerWidth/window.innerHeight;
     myCamera.updateProjectionMatrix();
     myRenderer.setSize(window.innerWidth,window.innerHeight);
 }
 window.addEventListener('resize',onResize);
-
