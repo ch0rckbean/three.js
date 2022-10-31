@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Camera, Mesh } from 'three';
 import {AxesHelper} from '../node_modules/three/src/helpers/AxesHelper.js'
 
+//*Basic setting
 var myRenderer;
 var myCamera;
 var myScene;
@@ -16,20 +17,18 @@ const container=document.getElementById('myContainer');
 container.appendChild(myRenderer.domElement);
 //*camera setting
 myCamera=new THREE.PerspectiveCamera(45,rd_w/rd_h,1,500);
-myCamera.position.set(0,0,50);
+myCamera.position.set(0,0,20);
 myCamera.up.set(0,1,0);
 myCamera.lookAt(0,0,0);
 //*scene setting
 myScene=new THREE.Scene();
-//*보조축 추가
+//*보조축 추가 및 배경색 지정
 var axes=new THREE.AxesHelper(20); 
 myScene.add(axes);  
-myScene.background = new THREE.Color('#2E0249');
+myScene.background = new THREE.Color('#FAF7F0');
 
-// const controls=new OrbitControls(myCamera,myRenderer.domElement);
-
-//geometry setting: Make a Cube!
-const points=[ //cubeSize==10
+//*geometry setting: Make a Cube!
+const points=[ //cubeSize==10, origin point=(0,0,0)
     5,5,5,  //0
     5,5,-5,  //1
     5,-5,5, //2
@@ -55,18 +54,18 @@ const pointsArray=new Float32Array(points);
 cubeGeo.setAttribute('position',new THREE.BufferAttribute(pointsArray,3));
 cubeGeo.setIndex(indicies);
 
-const cubeMaterial=new THREE.MeshBasicMaterial( { color: '#37E2D5', wireframe:true } );
+const cubeMaterial=new THREE.MeshBasicMaterial( { color: '#277BC0', wireframe:true } );
 let myMesh = new THREE.Mesh( cubeGeo, cubeMaterial );
 
 myScene.add(myMesh);
-// controls.update();
 myRenderer.render(myScene,myCamera);
 //여기까지 object 생성 및 scene에 render
 
-//*camera -object 간 거리 체크 => 15
+//*camera - object 간 거리 체크 => 20
 console.log(myCamera.position.distanceTo(myMesh.position));
+console.log((myCamera.position.z)-(myMesh.position.z)); 
 
-//* Event
+//* Events
 animate();
 //*create animation
 function animate(){
@@ -127,7 +126,6 @@ function objL_MouseDownHandler(e){
         mouse_btn_flag=true;     
         myRenderer.domElement.onpointerdown=objL_MouseDownHandler;
         if(e.button==0){
-        //LBtn
             console.log('objM_Mouse Left Btn Down');
             objL_MouseMoveHandler(e);
         }
@@ -136,7 +134,6 @@ function objL_MouseDownHandler(e){
 //*MouseEvent(1-2)  Move Object: Move the cube parallel to the image plane by Rbtn mouse drag
 function objR_MouseDownHandler(e){
     if(e.button==2){
-        //RBtn
         myRenderer.domElement.oncontextmenu=objR_MouseDownHandler;
         console.log('objM_Mouse Right Btn Down');
         objR_MouseMoveHandler(e);
@@ -149,8 +146,6 @@ function compute_pos_ss2ws(x_ss,y_ss){
 }
 
 function objL_MouseMoveHandler(e){
-    //마우스 움직일 시 함수
-    //L, R 버튼 if문으로 구분
     if(e.pointerType=='mouse'){
         myRenderer.domElement.onpointermove=objL_MouseMoveHandler;
         const myPosPS=new THREE.Vector3(
@@ -164,16 +159,16 @@ function objL_MouseMoveHandler(e){
         // console.log("Mouse Pos WS:",myPosWS.x, myPosWS.y, myPosWS.z);
         // console.log(e.button);
             
-        if(mouse_btn_flag&&e.button<=0 ){ //마우스 Lbtn 다운이면       
+        if(mouse_btn_flag&&e.button<=0 ){ 
             myMesh.rotation.x+=-(myPosPS.y/rd_h*30);
             myMesh.rotation.y+=(myPosPS.x/rd_w*30);
-           
-            console.log(myMesh.matrix.elements);
-            console.log('left');
-            //한계: Euler 연산을 사용했기에 Gimbal Lock 이슈가 있을 수 있음. Rbtn 클릭시에도 obj_Lbtn event가 같이 실행 됨
+            // console.log(myMesh.matrix.elements);
+            // console.log('left');
+            //한계: Euler 연산을 사용했기에 Gimbal Lock 이슈가 있을 수 있음. 
         }
     }
 }
+
 function objR_MouseMoveHandler(e){
     myRenderer.domElement.onpointermove=objR_MouseMoveHandler;
     const myPosPS=new THREE.Vector3(
@@ -184,9 +179,10 @@ function objR_MouseMoveHandler(e){
     myPosWS.unproject(myCamera);
     // console.log('right');
     if(mouse_btn_flag){
+        console.log('objM_Mouse Right Btn Move');
         myMesh.translateX(myPosPS.x/5);
         myMesh.translateY(myPosPS.y/5);
-        myMesh.position.z=(0);
+        myMesh.position.z=0;
     }
     // console.log(myMesh.matrix.elements);
 }
@@ -197,12 +193,10 @@ function cmrL_MouseDownHandler(e){
     if(e.pointerType=='mouse'){
         mouse_btn_flag=true;     
         myRenderer.domElement.onpointerdown=cmrL_MouseDownHandler;
-
-        // if(e.button==0){
-        //LBtn
+        if(e.button==0){
             console.log('cmrM_Mouse Left Btn Down');
             cmrL_MouseMoveHandler(e);
-        // }
+        }
     }
 }
 
@@ -215,12 +209,9 @@ function cmrR_MouseDownHandler(e){
     }
 }
 
-
 function cmrL_MouseMoveHandler(e){
     if(e.pointerType=='mouse'){
-        
         myRenderer.domElement.onpointermove=cmrL_MouseMoveHandler;
-        
         const myPosPS=new THREE.Vector3(
             e.clientX/rd_w * 2 - 1,  //0~ 1 -> 0~ 2 , -1 ==1  => x를 -1~ 1로 매핑
             -e.clientY/rd_h*2+1, //screen(아래쪽) 과 proj y방향 반대
@@ -229,13 +220,11 @@ function cmrL_MouseMoveHandler(e){
         myPosWS.unproject(myCamera);//WS에 매핑 위한 unprojection : SS -> WS로 inverse (view, projection) T 해줌
 
         if(mouse_btn_flag&& e.button<=0){
-        //LBtn
             console.log('cmrM_Mouse Left Btn Move');
             myCamera.rotation.x-=myPosWS.y*Math.PI/45;
             myCamera.rotation.y+=myPosWS.x*Math.PI/45;
             myCamera.rotation.z+=myPosWS.y*Math.PI/45;
-
-            console.log(myCamera.matrix.elements);
+            // console.log(myCamera.matrix.elements);
         }
     }
 }
@@ -243,21 +232,19 @@ function cmrL_MouseMoveHandler(e){
 function cmrR_MouseMoveHandler(e){
     myRenderer.domElement.onpointermove=cmrR_MouseMoveHandler;
     const myPosPS=new THREE.Vector3(
-        e.clientX/rd_w * 2 - 1,  //0~ 1 -> 0~ 2 , -1 ==1  => x를 -1~ 1로 매핑
-        -e.clientY/rd_h*2+1, //screen(아래쪽) 과 proj y방향 반대
-        -1);
+        e.clientX/rd_w * 2 - 1,  
+        -e.clientY/rd_h*2+1);
     const myPosWS=myPosPS.clone();
     myPosWS.unproject(myCamera);
-    //RBtn
-    if(mouse_btn_flag){
 
+    if(mouse_btn_flag){
+        console.log('cmrM_Mouse Right Btn Move');
         myCamera.translateX(-myPosPS.x/5);
         myCamera.translateY(-myPosPS.y/5);
-        myCamera.position.z=(0);
+        myCamera.position.z=myCamera.position.z;
+    }
+}
 
-        console.log('cmrM_Mouse Right Btn Down');
-}
-}
 // *MouseEvent(2-2)  Move Camera : Move the camera by mouse wheels
 function cmr_MouseScrollHandler(e){
     //*check mouse scroll amount
