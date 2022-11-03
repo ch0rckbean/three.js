@@ -1,0 +1,83 @@
+<!-- https://threejs.org/docs/index.html?q=line#manual/en/introduction/Drawing-lines -->
+
+<!DOCTYPE html>
+<html lang="en">
+<header>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            background-color: #bfe3dd;
+            color: #000;
+        }
+
+        a {
+            color: #2983ff;
+        }
+    </style>
+</header>
+<body>
+    <div id="container"></div>
+
+        <script type="importmap">
+            {
+                "imports":{
+                    "imported_three":"../node_modules/three/build/three.module.js"
+                }
+            }
+        </script>
+        <script type="module">
+            import * as THREE from 'imported_three';
+//renderer 생성
+            const myRenderer=new THREE.WebGLRenderer();
+            //GPU로 만든 컨텐츠들이 웹에 들어갈 수 있도록
+            const myWidth=window.innerWidth; //window의 너비를 담은 변수 선언
+            const myHeight=window.innerHeight; //window의 높이를 담은 변수 선언
+            //viewport Transform
+            myRenderer.setSize(myWidth,myHeight);  //renderer의 너비,높이를 window의 너비,높이로 설정
+            myRenderer.setViewport(-myWidth/50,0,myWidth,myHeight); //scene이 보여질 공간인 viewport의 크기, 보여질 범위 설정
+
+            document.body.appendChild(myRenderer.domElement);
+            //domElement : renderer가 아웃풋 그리는 캔버스. 생성자 내 reneder에 의해 자동 생성 됨 
+
+//카메라 세팅
+            const myCamera=new THREE.PerspectiveCamera(45, myWidth/myHeight,1,500);
+            //카메라 세팅 (각도, aspect ratio, near plane(1유닛 단위), far plane(500유닛 단위)_둘다 wrd 스페이스에서)
+            // projection T
+
+            myCamera.position.set(0,0,-100); //카메라 위치 설정
+            myCamera.lookAt(0,0,100); //up(유닛)벡터(y축 방향) 빠짐_ 디폴트(0,1,0)
+            myCamera.up.set(0,1,0); //추가
+            //이 단계에서 카메라 포지션에 따른 Clipping 발생
+            //view T 
+
+//geometry 세팅
+            const points=[]; //디자이너(사용자)에 의해 지정될 object의 속성(geometry)이 담길 배열 선언
+            points.push(new THREE.Vector3(-10,0,0));
+            points.push(new THREE.Vector3(0,10,0));
+            points.push(new THREE.Vector3(10,0,0));
+            //obj space에 정의되는 object의 points. 
+
+            const myGeo=new THREE.BufferGeometry().setFromPoints(points);
+            //정의한 points를 담은 arr 통해 geometry 만들어줌
+        
+            //create a lime LineBasicMaterial
+            const myMaterial=new THREE.LineBasicMaterial({
+                color: '#b4ff29'});
+            //LineBasicMaterial의 object, myMaterial 생성. Option으로는 LineDashedMaterial 존재
+
+//line model 생성
+            const myLine=new THREE.Line(myGeo,myMaterial);
+            //geometry 기본 들어감, material: geometry의 특성 결정 => 모델 정의 위해 둘 필요
+            //정의한 Object의 geometry 속성을 material(object)에 적용
+            //object3D 상속 받고 있음
+//scene 생성
+            const myScene=new THREE.Scene();
+            //objects가 배치될 scene(world space) 생성
+
+//scene에 model 추가
+            myScene.add(myLine);  //scene(world space)에 object 배치(Model Transform)
+            myRenderer.render(myScene,myCamera); // 카메라,scene 그리기(render)
+        </script>
+</body>
+</html>

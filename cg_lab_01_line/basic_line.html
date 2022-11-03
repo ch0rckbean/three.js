@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+    <header>
+		<title>three.js webgl - cameras</title>
+		<meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <style>
+            body {
+                background-color: #bfe3dd;
+                color: #000;
+            }
+    
+            a {
+                color: #2983ff;
+            }
+        </style>
+</header>
+<body>
+    <div id="container">
+    <script type="importmap">
+        {
+            "imports":{
+                "three":"../node_modules/three/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+    //교수님이 자주 사용하실 코드 스타일
+
+        //const myContainter=document.getElementById('myContainer');
+        //container.appendChild(myContainter);  +)
+
+
+
+
+//여기부터 예제 코드
+        const renderer = new THREE.WebGLRenderer();  //GPU로 만든 컨텐츠들이 웹에 들어갈 수 있도록
+        renderer.setSize( window.innerWidth,window.innerHeight); //교수님은 640,480로 설정
+        renderer.setViewport(window.innerWidth/2,0,window.innerWidth,window.innerHeight); //반 잘려서 나오는거 과제 svg로도 설명하기
+        document.body.appendChild( renderer.domElement );
+        //domElement : renderer가 아웃풋 그리는 캔버스
+
+//*카메라 세팅
+        const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 500 );
+        //카메라 세팅 (각도, aspect ratio, near plane(1유닛 단위), far plane(500유닛 단위)_둘다 wrd 스페이스에서)
+        camera.position.set( 0, 0, -100 );  //숫자와 obj 크기 비례
+        camera.lookAt( 0, 0, 50 );
+        //up(유닛)벡터(y축 방향) 빠짐_ 디폴트(0,1,0)
+        camera.up.set(0,-1,0) //추가
+        
+//*geometry 세팅
+        const points = [];
+        points.push( new THREE.Vector3( - 10, 0, 0 ) );
+        points.push( new THREE.Vector3( 0, 10, 0 ) );
+        points.push( new THREE.Vector3( 10, 0, 0 ) );
+        //obj space에 정의되는 애들
+        
+        const geometry = new THREE.BufferGeometry().setFromPoints( points );
+        //정의한 points를 담은 arr 통해 geometry 만들어줌
+        
+        //create a lime LineBasicMaterial
+        const material = new THREE.LineBasicMaterial( { color: b4ff29 } );
+
+//*(line으로 구성된) line model 생성
+        const myLine = new THREE.Line( geometry, material );
+        //geometry 기본 들어감, m: g의 특성 결정 => 모델 정의 위해 둘 필요
+        //object3D 상속 받고 있음
+
+//*scene 생성
+        const myScene = new THREE.Scene();
+        //objects가 배치될 scene 생성
+        
+//*scene에 model 추가
+        myScene.add( myLine );
+        renderer.render( myScene, camera );  //scene 정보 카메라 통해 그리기
+    </script>
+</div>
+</body>
+</html>
