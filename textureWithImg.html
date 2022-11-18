@@ -42,7 +42,7 @@
             var txtLoader=new THREE.TextureLoader();
             var myTex=txtLoader.load('./img.jpg');
 
-//Mesh 추가
+//Mesh & Texture추가 : User Custom Geometry가 아닌, 자체 제공 Geo 사용했기에 이미지 늘어짐 없음
             
             var myMat=new THREE.MeshPhongMaterial({color:0xffffff,map:myTex});
 
@@ -77,16 +77,6 @@
             var gui=new dat.GUI();
    
             render();
-
-            function createMesh(geom){
-                var texture=THREE.ImageUtils.loadTexture("./img.jpg");
-                var mat=new THREE.MeshPhongMaterial();
-                mat.map=texture;
-
-                var mesh=new THREE.Mesh(geom,mat);
-                return mesh;
-            }
-
             function render(){
                 stats.update();
                 polyhedron.rotation.y=step+=0.01;
