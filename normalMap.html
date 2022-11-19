@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>study</title>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.3/dat.gui.min.js"></script>
+    
+    <style>
+        body{
+            margin:0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="Stats-output"></div>
+    <div id="WebGL-output"></div>
+
+    <script type="module">
+        import * as THREE from './node_modules/three/build/three.module.js'
+        import Stats from './node_modules/three/examples/jsm/libs/stats.module.js'
+
+        function init(){
+            var stats=initStats();
+            var scene=new THREE.Scene();
+            
+            var camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,1000);
+            camera.position.x=0;
+            camera.position.y=12;
+            camera.position.z=40;
+            camera.lookAt(new THREE.Vector3(0,0,0));
+            
+            var renderer=new THREE.WebGLRenderer();
+            renderer.setClearColor(new THREE.Color(0xEEEEEE,1.0));
+            renderer.setSize(window.innerWidth,window.innerHeight);
+            renderer.shadowMap.enabled=true;
+            
+            var loader=new THREE.TextureLoader();
+
+    //Mesh 추가
+            var mesh1=createMesh(new THREE.BoxGeometry(15,15,15),'plaster.jpg');
+            //mesh1.rotation.y=-0.5;
+            mesh1.rotation.y=-0.5;
+            mesh1.position.x=12;
+            scene.add(mesh1);
+
+            var mesh2=createMesh(new THREE.BoxGeometry(15,15,15),"plaster.jpg","plaster-normal.jpg");
+            //detail Plastered Material
+            //mesh2.rotation.y=0.5;
+            mesh2.rotation.y=0.5;
+            mesh2.position.x=-12;
+            scene.add(mesh2);
+    
+    //texture Load
+            var floorTex=loader.load('./learning-threejs/assets/textures/general/floor-wood.jpg');
+         
+            var plane=new THREE.Mesh(new THREE.BoxGeometry(200,100,0.1,30),new THREE.MeshPhongMaterial({
+                color:0x3c3c3c, map:floorTex
+            }));
+            plane.position.y=-7.5;
+            plane.rotation.x=-0.5*Math.PI;
+            scene.add(plane);            
+           
+    //광원 추가
+            var ambLight=new THREE.AmbientLight(0x242424);
+            scene.add(ambLight);
+
+            var spotLight=new THREE.SpotLight();
+            spotLight.position.set(0,30,30);
+            spotLight.intensity=1.2;
+            scene.add(spotLight);
+
+            var pointColor='#ff5808';
+            var pointLight=new THREE.PointLight(pointColor);
+            scene.add(pointLight);
+
+        //pointLight simulate 하는 작은 구 추가
+            var sphereLightGeo=new THREE.SphereGeometry(0.2);
+            var sphereLightMaterial=new THREE.MeshBasicMaterial({color:0xac6c25});
+            var sphereLightMesh=new THREE.Mesh(sphereLightGeo,sphereLightMaterial);
+            sphereLightMesh.castShadow=true;
+            sphereLightMesh.position.set(0.1,0,1); //
+            //sphereLightMesh.position.set(new THREE.Vector3(3,3,3)); // why small sphere not work? 
+            
+            console.log(sphereLightMesh.position);
+            scene.add(sphereLightMesh);
+
+            document.getElementById("WebGL-output").appendChild(renderer.domElement);
+
+            var step=0;
+            
+            var controls=new function(){
+                //default 설정
+                this.normalScale=1
+                this.changeTexture="plaster";
+                this.rotate=false;
+
+                this.changeTexture=function(e){
+                    var texture=loader.load('./learning-threejs/assets/textures/general/' + e + '.jpg');
+                    mesh1.material.map=texture;
+                    mesh2.material.map=texture;
+
+                    var bump=loader.load('./learning-threejs/assets/textures/general/' + e + '-normal.jpg');
+                    mesh2.material.normalMap=bump;
+                };
+                this.updateBump=function(e){
+                    mesh2.material.normalScale.set(e,e);
+                }
+            };
+
+            var gui=new dat.GUI();
+            gui.add(controls,"normalScale",-2,2).onChange(controls.updateBump);
+            gui.add(controls,"changeTexture",['plaster','bathroom','metal-floor']).onChange(controls.changeTexture);
+            gui.add(controls,"rotate")
+   
+            render();
+
+            function createMesh(geom,imageFile,normal){
+
+                if(normal){
+                    var t=loader.load('./learning-threejs/assets/textures/general/'+imageFile);
+                    var m=loader.load('./learning-threejs/assets/textures/general/'+normal);
+                    var mat2=new THREE.MeshPhongMaterial();
+                    mat2.map=t;
+                    mat2.normalMap=m;
+                    
+                    var mesh=new THREE.Mesh(geom,mat2);
+                    return mesh;
+                }else{
+                    var t=loader.load('./learning-threejs/assets/textures/general/'+imageFile);
+                    var mat1=new THREE.MeshPhongMaterial({map:t});
+                    var mesh=new THREE.Mesh(geom,mat1);
+                    return mesh;
+                }
+                return mesh;
+            }
+
+            function createNmMapShaderMtrl(dfsMap,nmMap){
+                var shader=THREE.ShaderLib['normalmap'];
+                var uniforms=THREE.UniformsUtils.clone(shader.uniforms);
+
+                var dT=loader.load(dfsMap);
+                var nT=loader.load(nmMap);
+
+                uniforms["uShininess"].value=50;
+                uniforms["enableDiffuse"].value=true;
+                uniforms["uDiffuseColor"].value.setHex(0xffffff);
+                uniforms["tDiffuse"].value=dT;
+                uniforms["tNormal"].value=nT;
+
+                uniforms["uNormalScale"].value.set(1,1);
+                //nmScale 설정 통해 bump 어떻게 보이는지 명확하게 정의 가능. 
+                //nmMap, nmScale 값 정의 통해 x,y 축 따라 확장 가능
+                //best: 이 값들을 가장 좋은 효과의 값과 동일 유지. 0 이하가 되면 높이 거꾸로 됨.
+                uniforms["uSpecularColor"].value.setHex(0xffffff);
+                uniforms["enableSpecular"].value=true;
+
+                return new THREE.ShaderMaterial({
+                    fragmentShader:shader.fragmentShader,
+                    vertexShader: shader.vertexShader,
+                    uniforms: uniforms,
+                    lights:true
+                })
+            }
+
+            var invert=1;
+            var phase=0;
+            
+            function render(){
+                stats.update();
+                step+=0.1;
+
+                if(controls.rotate){
+                    mesh1.rotation.y-=0.01;
+                    mesh2.rotation.y+=0.01;
+                }
+
+                if(phase>2*Math.PI){
+                    invert=invert*-1;
+                    phase-=2*Math.PI;
+                }else{
+                    phase+=0.03;
+                }
+                sphereLightMesh.position.z=+(21*(Math.sin(phase)));
+                sphereLightMesh.position.x=-14+(14*(Math.cos(phase)));
+
+                if(invert<0){
+                    var pivot=0;
+                    sphereLightMesh.position.x=(invert*(sphereLightMesh.position.x - pivot))+pivot;
+                }
+                pointLight.position.copy(sphereLightMesh.position);
+             
+                requestAnimationFrame(render);
+                renderer.render(scene,camera);
+            }
+
+            function initStats(){
+                var stats=new Stats();
+                stats.setMode(0); //0: fps, 1: ms
+                
+                //Align top-left
+                stats.domElement.style.position='absolute';
+                stats.domElement.style.left='0px';
+                stats.domElement.style.top='0px';
+
+                document.getElementById("Stats-output").appendChild(stats.domElement);
+                return stats;
+            }
+        }
+        window.onload=init
+    </script>
+</body>
+</html>
