@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+    <header>
+		<title>three.js webgl - cameras</title>
+		<meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+        <style>
+            body {
+                background-color: #bfe3dd;
+                color: #000;
+            }
+    
+            a {
+                color: #2983ff;
+            }
+        </style>
+</header>
+<body>
+    <div id="myContainer">
+    <script type="importmap">
+        {
+            "imports":{
+                "three":"../node_modules/three/build/three.module.js"
+            }
+            
+        }
+    </script>
+    <script type="module" src="./practice.js"></script>
+    <!-- https://threejs.org/examples/?q=shader#webgl_buffergeometry_rawshader -->
+    <script id="vertexShader" type="x-shader/x-vertex">
+
+        //precision mediump float;
+        //precision highhp int;
+        
+        <!-- uniform: global variable  -->
+        //md, prjt 따로 선언
+        uniform mat4 modelViewMatrix; // optional
+        uniform mat4 projectionMatrix; // optional
+
+        <!-- varying: input: stream 해서 들어옴 -->
+        attribute vec3 position;
+        attribute vec4 color;
+        attribute vec2 uv;  //vec 뒤 숫자: 플롯 값으로 맞춰줘야- 검색해보기 보고서 쓸 때
+
+        <!-- varying: output -->
+        //varying: 값 그대로 전달이었는데 검색해보기. 
+        varying vec3 vPosition;  //bf에 저장된 값을 frgm shdr에 전달.attr 
+        varying vec4 vColor;  // rasterization -> 삼각형 vtx의 보간값 frgmt shdr에 전달
+        varying vec2 vUv;
+
+        void main()	{
+
+            <!-- T 없이 OS 그대로 값 전달된 상태. frgmt shdr에서 사용 가능 -->
+            <!-- vPosition = position; //WS에서 써야 하는데 OS 내 정의 positon이어서 안 됨. -> T 필요-> model T를 unf으로 또 set해야함 -->
+            vex4 pos4=modelMat * vec4(position,1.0);  //T의 -1 쓰기 ?
+            vPosition=pos4.xyz/pos4.w;  //WS 의 position 들어감
+            vColor = vec4(uv,1,1);
+
+            gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+            //rasterization의 sys-value. 그래픽 파이프라인에서 실제로 쓰임. PS o , SS x (col-Major==p*m=4*4 mtrx) 1.0:=position의 homogenous term(x,y,z,w 값)
+            //modelViewMatrix: OS->CS 한번에 옮겨줌 
+            //prjMtrx,mdMtrx:Obj 단위라서 unf 단위,변수로 들어와야 함.(unf: mtrl에 넣었음) 이유= 씬 내 모든 모델에 대해 개별적으로 렌더 돼서=그래픽스 파이프라인 매번 돌아감
+            //gl_position: PS의 값 들어가야 함
+
+        }
+
+    </script>
+    <!-- color 결정이 이뤄지는 장소에 따라 shading은 다음으로 나뉨
+    vtx shdr:goauraud- flat shd 시 중간에 higlight 안 들어감
+    frgmt shdr: phong - flat shd 시 중간에 higlight 들어감  -->
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        
+        precision mediump float;
+        precision mediump int;
+        
+        uniform float time;  
+        //js로부터 추가됨. 내가 임의로 추가한 변수
+        uniform int myTestParam; 
+        uniform vec3 myTestVec3; 
+        uniform sampler2D myTexImg; 
+//Phong lighting 하려면 unf, nm + 빛의 방향,위치 필요 ㅠㅠ
+
+
+        <!--input : vtx shdr의 output. 값 그대로 적음-->
+        varying vec3 vPosition;
+        varying vec4 vColor;
+        varying vec2 vUv;
+
+        void main()	{
+
+            vec4 color = vec4( vColor );
+            //color.r += sin( vPosition.x * 10.0 + time ) * 0.5;
+            
+
+            //gl_FragColor = color;  //sys-value.
+            gl_FragColor = vec4 (1,0,0,1);  //color. cube=red. RGBa : 비컴 보기
+            <!-- debug -->
+            if(myTestParam === 1765){
+                //gl_FragColor=vec4(vUv,1,1);
+                gl_FragColor.rgb=texture2D(myTexImg,vUv).rgb  
+                //gl_FragColor.bgr=texture2D(myTexImg,vUv).bgr   //값 r->g->b->r 가게 하려면== swizzling. gl_FragColor==Color
+                gl_FragColor.a=1.0;
+            }
+
+        }
+
+    </script>
+</div>
+</body>
+</html>
