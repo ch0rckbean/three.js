@@ -1,0 +1,127 @@
+<header>
+    <title>HW2</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            background-color: #bfe3dd;
+            color: #000;
+        }
+
+        a {
+            color: #2983ff;
+        }
+    </style>
+</header>
+<body>
+    <div id="myContainer"></div>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "../node_modules/three/build/three.module.js"
+            }
+        }
+    </script>
+
+    <script id="vertexShader" type="x-shader/x-vertex">
+
+        precision mediump float;
+        precision mediump int;
+
+        // Assignment TO DO //
+        uniform mat4 modelViewMatrix; 
+        uniform mat4 projectionMatrix;  
+        //OS의 attr을 VS로 전달하려고 따로 뺌
+
+        attribute vec3 position;
+        attribute vec3 normal;
+
+        varying vec3 vPosition;
+        varying vec3 vNormal;
+        varying vec3 fragPos;
+
+        void main()	{
+            // Assignment TO DO //image.png
+            //* choose your lighting space (world or camera space)
+            // => WS (World Space)
+
+            //* transform position and normal accordingly 
+            vPosition = position; //varying. OS의 값
+            vNormal = mat3(transpose(inverse(modelViewMatrix)))*normal; 
+            
+            //* get your model matrix
+            fragPos=vec3(modelViewMatrix * vec4(vPosition, 1.0));
+
+            gl_Position = projectionMatrix * modelViewMatrix * vec4( vPosition, 1.0 );
+           
+        }
+
+    </script>
+
+    <script id="fragmentShader" type="x-shader/x-fragment">
+        
+        #define X_PI 3.14159265358979323846
+
+        precision mediump float;
+        precision mediump int;
+        
+        varying vec3 vPosition;
+        varying vec3 vNormal;
+        varying vec3 fragPos;
+     
+        uniform float lightColor;
+        uniform float objColor;
+        uniform float ambientColor;
+        uniform vec3 lightPos; 
+        uniform float shininess;
+        uniform vec3 cmrPos;
+        uniform sampler2D envMap;
+       
+        void main()	{
+            //* Assignment TO DO //
+            
+            //* get Material color
+            //* get Point Light position
+            //* get Point Light color
+            // => + set in js module            
+            vec3 L = normalize(lightPos - fragPos) //종점 - 시점. 크기가 아닌 방향만 중요할 뿐이므로 정규화 수행
+            
+            //*get Normal Vector
+            vec3 N = normalize(vNormal);
+           
+            //* get Camera position
+            // => set in js module            
+            vec3 V= normalize(cmrPos- fragPos); //방향 정의를 위한 정규화
+
+            //* get Ambient Light color
+            float ambientIntensity=0.1;
+            vec3 ambient = ambientIntensity * ambientColor;
+    
+            //* get Diffuse Factor
+            float dfs= max(dot(N, L),0.0); //clamp operation을 위해 max 함수 사용 (clamp to 0.0)
+            vec3 diffuse= dfs * lightColor;
+ 
+            //* get Specular/Shininess factor
+            float specularIntensity=0.5;
+            vec3 R=reflect(-L, N);
+            float spec=pow(max(dot(V,R),0.0),shininess); 
+            //clamp operation을 위해 max 함수 사용 (clamp to 0.0)
+            //attenuation을 반영하기 위한 shininess 계산을 위해, pow 함수 사용
+            vec3 specular=specularIntensity * spec * lightColor;
+
+            if (diffuse <= 0) { 
+                specular=0;
+            } //표면이 광원과 반대 방향이라면, 노말 벡터가 반대 방향이므로 음수값이 도출되고, 이는 오류를 발생시킴. 이를 방지하기 위한 조건문 사용
+    
+            //* Assignment TO DO //
+            //* get necessary attributes (interpolated)
+            
+            //* compute Phong Lighting
+            vec3 res=(ambient + diffuse + specular) * objColor;
+            gl_FragColor = vec4(res, 1,0);
+        }
+
+    </script>
+
+    <script type="module" src="./practice.js"></script>
+</body>                          
