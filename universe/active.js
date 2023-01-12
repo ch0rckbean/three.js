@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { MaterialLoader } from 'three';
+import { MaterialLoader, Mesh } from 'three';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { OBJLoader } from '../node_modules/three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from '../node_modules/three/examples/jsm/loaders/MTLLoader.js';
@@ -133,19 +133,24 @@ mtlLoader.load('./obj/sun.mtl', function (materials){
         train999.rotation.x+=0.5;
         myScene.add(train999);
     });
+
 }
 
 
 //* Events
-animate();
+// train999=
+// train999.addEventListener("click",R);
+// function R(){
+//     Mesh.rotation.x+=0.5;
+// }
 //*create animation
 function animate(){
-    requestAnimationFrame(animate);
     ctrl.update();
+    
+    requestAnimationFrame(animate);
     myRenderer.render(myScene,myCamera);
-    sun.rotation.x+=0.3;    
-
 }
+animate();
 
 //*add resize event
 function onResize(){
