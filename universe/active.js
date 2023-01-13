@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { MaterialLoader, Mesh } from 'three';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { OBJLoader } from '../node_modules/three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from '../node_modules/three/examples/jsm/loaders/MTLLoader.js';
@@ -40,15 +39,15 @@ myScene.background = new THREE.Color('#150050');
 
 
 
-/*Controller / Loader*/
-const ctrl=new OrbitControls(myCamera,myRenderer.domElement);
-ctrl.update();
+// /*Controller / Loader*/
+// const ctrl=new OrbitControls(myCamera,myRenderer.domElement);
+// ctrl.update();
 
 
 /*Mtl Load */
 const mtlLoader=new MTLLoader();
 
-mtlLoader.load('./obj/sun.mtl', function (materials){
+mtlLoader.load('./obj/earth.mtl', function (materials){
     materials.preload();
     objLoader(materials);
 });
@@ -71,12 +70,16 @@ mtlLoader.load('./obj/sun.mtl', function (materials){
     var sun = objLoader.load('./obj/sun.obj',function (sun){
         console.log(sun.position);
         sun.position.set(0,-0.5,0);
+        sun.scale.x=1.5;
+        sun.scale.y=1.5;
         myScene.add(sun);
     });
     var ufo = objLoader.load('./obj/ufo.obj',function (ufo){
         ufo.position.set(-4.5,1.3,0);
         ufo.rotation.z+=0.2;
         ufo.rotation.x+=0.3;
+        ufo.scale.x=1.5;
+        ufo.scale.y=1.5;
         myScene.add(ufo);
     });
     var et = objLoader.load('./obj/et.obj',function (et){
@@ -109,14 +112,17 @@ mtlLoader.load('./obj/sun.mtl', function (materials){
         console.log(moon.position);
         moon.position.set(-1.8,2.3,0);
         moon.rotation.x+=0.1;
-
+        moon.scale.x=1.5;
+        moon.scale.y=1.5;
         myScene.add(moon);
     });
     var saturn = objLoader.load('./obj/saturn.obj',function (saturn){
         console.log(saturn.position);
-        saturn.position.set(0,3.8,0);
+        saturn.position.set(0,3.6,0);
         saturn.rotation.z-=0.2;
         saturn.rotation.x+=0.5;
+        saturn.scale.x*=2;
+        saturn.scale.y*=2;
         myScene.add(saturn);
     });
     var rckt = objLoader.load('./obj/rckt.obj',function (rckt){
@@ -126,29 +132,36 @@ mtlLoader.load('./obj/sun.mtl', function (materials){
         rckt.rotation.y+=0.3;
         myScene.add(rckt);
     });
-    var train999 = objLoader.load('./obj/train999.obj',function (train999){
+    
+   
+     var train999 = objLoader.load('./obj/train999.obj',function (train999){
         console.log(train999.position);
         train999.position.set(-3,-3.5,0);
         train999.rotation.z+=0.7;
         train999.rotation.x+=0.5;
+        document.addEventListener('click',R);
         myScene.add(train999);
     });
-
+}
+function R(e){
+    console.log(myScene.children);  //group 누군지 아는 법
+    var t=myScene.getObjectByName("train999");
+    console.log(t);
+    
 }
 
 
 //* Events
-// train999=
-// train999.addEventListener("click",R);
-// function R(){
-//     Mesh.rotation.x+=0.5;
-// }
+
+
+
 //*create animation
 function animate(){
-    ctrl.update();
+    // ctrl.update();
     
     requestAnimationFrame(animate);
     myRenderer.render(myScene,myCamera);
+
 }
 animate();
 
