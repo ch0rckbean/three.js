@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import {OrbitControls} from '../node_modules/three/examples/jsm/controls/OrbitControls.js';
 import { OBJLoader } from '../node_modules/three/examples/jsm/loaders/OBJLoader.js';
 import { MTLLoader } from '../node_modules/three/examples/jsm/loaders/MTLLoader.js';
+import { Object3D } from 'three';
+import { BoxHelper } from '../node_modules/three/src/helpers/BoxHelper.js';
 
 
 /* Basic Setting*/
@@ -139,20 +141,44 @@ mtlLoader.load('./obj/earth.mtl', function (materials){
         train999.position.set(-3,-3.5,0);
         train999.rotation.z+=0.7;
         train999.rotation.x+=0.5;
-        document.addEventListener('click',R);
         myScene.add(train999);
     });
 }
-function R(e){
-    console.log(myScene.children);  //group 누군지 아는 법
-    var t=myScene.getObjectByName("train999");
-    console.log(t);
+console.log(myScene.children);  //group 누군지 아는 법
+var t=myScene.getObjectByName("train999");
+console.log("t: "+t);
     
+
+
+function loadModel(){
+    var pst=new THREE.Vector3();
+    myScene.traverse(function (child){
+        if(child){
+            child.geometry.computeBoundingBox();
+            var bdBox=new THREE.BoxHelper(child, 0xfffff00);
+            bdBox=child.geometry.bdBox;
+            pst.subVectors(bdBox.max, bdBox.min);
+            pst.multiplyScalar(0.5);
+            pst.add(bdBox.min);
+            pst.applyMatrix4(Object3D.matrixWorld);
+            child.geometry.applyMatrix4(
+                new THREE.Matrix4().makeTranslation(
+                    -(pst.x),
+                    -(pst.y),
+                    -(pst.z),
+                )
+            );
+            child.verticesNeedUpdate=true;
+            child.pst.set(pst.x, pst.y, pst.z);
+            child.rotation.z=2 * Math.PI * Math.random();
+            console.log("tt");
+        } //https://www.google.co.kr/search?q=+boxhelper+threejs+import&sxsrf=AJOqlzXzlJ5mUYjKNm7ASMHi5ljuIZfLFQ%3A1674312718565&ei=DvzLY-GEIrzh2roPwZGj2AY&ved=0ahUKEwjhw9T29Nj8AhW8sFYBHcHICGsQ4dUDCA8&uact=5&oq=+boxhelper+threejs+import&gs_lcp=Cgxnd3Mtd2l6LXNlcnAQA0oECEEYAEoECEYYAFAAWABglQFoAHAAeACAAQCIAQCSAQCYAQCgAQHAAQE&sclient=gws-wiz-serp
+        //https://discourse.threejs.org/t/how-to-rotate-each-mesh-in-the-object-which-is-loaded-by-objloader-around-each-axis/23242/7
+    });
 }
-
-
 //* Events
 
+loadModel();
 
 
 //*create animation
@@ -160,7 +186,9 @@ function animate(){
     // ctrl.update();
     
     requestAnimationFrame(animate);
+    // myScene.children.rotation.x+=0.2;
     myRenderer.render(myScene,myCamera);
+    bdBox.update();
 
 }
 animate();
