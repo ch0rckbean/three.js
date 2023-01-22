@@ -55,6 +55,8 @@ mtlLoader.load('./obj/earth.mtl', function (materials){
 });
 //why work?    
 
+var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999, rckt;
+
 
 /*Obj Load */
  function objLoader(materials){
@@ -62,133 +64,120 @@ mtlLoader.load('./obj/earth.mtl', function (materials){
      objLoader.setMaterials(materials);
      // objLoader.setPath('./obj/');
 
-     var earth= objLoader.load('./obj/earth.obj',function (earth){
-         console.log(earth.position);
+     objLoader.load('./obj/earth.obj',function (obj){
+         earth=obj;
          earth.position.set(2,-2.5,0);
          earth.rotation.y+=0.5;
          myScene.add(earth);
+         console.log(earth.position);
      });
 
-    var sun = objLoader.load('./obj/sun.obj',function (sun){
-        console.log(sun.position);
+    objLoader.load('./obj/sun.obj',function (obj){
+        sun=obj;
         sun.position.set(0,-0.5,0);
         sun.scale.x=1.5;
         sun.scale.y=1.5;
         myScene.add(sun);
+        console.log(sun.position);
     });
-    var ufo = objLoader.load('./obj/ufo.obj',function (ufo){
+    objLoader.load('./obj/ufo.obj',function (obj){
+        ufo=obj;
         ufo.position.set(-4.5,1.3,0);
         ufo.rotation.z+=0.2;
         ufo.rotation.x+=0.3;
         ufo.scale.x=1.5;
         ufo.scale.y=1.5;
         myScene.add(ufo);
+        console.log(ufo.position);
+
     });
-    var et = objLoader.load('./obj/et.obj',function (et){
-        //console.log(et.position);
+    objLoader.load('./obj/et.obj',function (obj){
+        et=obj;
         et.position.set(-3.5,0,0);
         myScene.add(et);
+        console.log(et.position);
     });
     
     //big light
-    var light1 = objLoader.load('./obj/light1.obj',function (light1){
-        console.log(light1.position);
+    objLoader.load('./obj/light1.obj',function (obj){
+        light1=obj;
         light1.position.set(4.3,3.3,0);
         myScene.add(light1);
+        console.log(light1.position);
     });
 
     //middle light
-    var light2 = objLoader.load('./obj/light2.obj',function (light2){
-        console.log(light2.position);
+    objLoader.load('./obj/light2.obj',function (obj){
+        light2=obj;
         light2.position.set(3.3,2.3,0);
         myScene.add(light2);
+        console.log(light2.position);
     });
 
     //small light
-    var light3 = objLoader.load('./obj/light3.obj',function (light3){
-        console.log(light3.position);
+    objLoader.load('./obj/light3.obj',function (obj){
+        light3=obj;
         light3.position.set(2.5,1.5,0);
         myScene.add(light3); 
+        console.log(light3.position);
     });
-    var moon = objLoader.load('./obj/moon.obj',function (moon){
-        console.log(moon.position);
+    objLoader.load('./obj/moon.obj',function (obj){
+        moon=obj;
         moon.position.set(-1.8,2.3,0);
         moon.rotation.x+=0.1;
         moon.scale.x=1.5;
         moon.scale.y=1.5;
         myScene.add(moon);
+        console.log(moon.position);
     });
-    var saturn = objLoader.load('./obj/saturn.obj',function (saturn){
-        console.log(saturn.position);
+    objLoader.load('./obj/saturn.obj',function (obj){
+        saturn=obj;
         saturn.position.set(0,3.6,0);
         saturn.rotation.z-=0.2;
         saturn.rotation.x+=0.5;
         saturn.scale.x*=2;
         saturn.scale.y*=2;
         myScene.add(saturn);
+        console.log(saturn.position);
     });
-    var rckt = objLoader.load('./obj/rckt.obj',function (rckt){
-        console.log(rckt.position);
+    objLoader.load('./obj/rckt.obj',function (obj){
+        rckt=obj;
         rckt.position.set(4,-4,0);
         rckt.rotation.z+=0.5;
         rckt.rotation.y+=0.3;
         myScene.add(rckt);
+        console.log(rckt.position);
     });
     
-   
-     var train999 = objLoader.load('./obj/train999.obj',function (train999){
-        console.log(train999.position);
+    objLoader.load('./obj/train999.obj',function (obj){
+        train999=obj;
         train999.position.set(-3,-3.5,0);
         train999.rotation.z+=0.7;
         train999.rotation.x+=0.5;
+        train999.name="train999";
         myScene.add(train999);
+        console.log(train999.position);
     });
 }
-console.log(myScene.children);  //group 누군지 아는 법
-var t=myScene.getObjectByName("train999");
-console.log("t: "+t);
+
+
+console.log("Position Order: earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999, rckt");
+console.log("Components: " + myScene.children);  //group 누군지 아는 법
+// var t=myScene.getObjectByName("rckt");
+// console.log("t: "+t);
+// console.log(1, rckt);  //undefined
     
 
 
-function loadModel(){
-    var pst=new THREE.Vector3();
-    myScene.traverse(function (child){
-        if(child){
-            child.geometry.computeBoundingBox();
-            var bdBox=new THREE.BoxHelper(child, 0xfffff00);
-            bdBox=child.geometry.bdBox;
-            pst.subVectors(bdBox.max, bdBox.min);
-            pst.multiplyScalar(0.5);
-            pst.add(bdBox.min);
-            pst.applyMatrix4(Object3D.matrixWorld);
-            child.geometry.applyMatrix4(
-                new THREE.Matrix4().makeTranslation(
-                    -(pst.x),
-                    -(pst.y),
-                    -(pst.z),
-                )
-            );
-            child.verticesNeedUpdate=true;
-            child.pst.set(pst.x, pst.y, pst.z);
-            child.rotation.z=2 * Math.PI * Math.random();
-            console.log("tt");
-        } //https://www.google.co.kr/search?q=+boxhelper+threejs+import&sxsrf=AJOqlzXzlJ5mUYjKNm7ASMHi5ljuIZfLFQ%3A1674312718565&ei=DvzLY-GEIrzh2roPwZGj2AY&ved=0ahUKEwjhw9T29Nj8AhW8sFYBHcHICGsQ4dUDCA8&uact=5&oq=+boxhelper+threejs+import&gs_lcp=Cgxnd3Mtd2l6LXNlcnAQA0oECEEYAEoECEYYAFAAWABglQFoAHAAeACAAQCIAQCSAQCYAQCgAQHAAQE&sclient=gws-wiz-serp
-        //https://discourse.threejs.org/t/how-to-rotate-each-mesh-in-the-object-which-is-loaded-by-objloader-around-each-axis/23242/7
-    });
-}
 //* Events
-
-loadModel();
 
 
 //*create animation
 function animate(){
     // ctrl.update();
-    
     requestAnimationFrame(animate);
     // myScene.children.rotation.x+=0.2;
     myRenderer.render(myScene,myCamera);
-    bdBox.update();
 
 }
 animate();
