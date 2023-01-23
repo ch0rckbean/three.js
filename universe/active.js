@@ -57,7 +57,6 @@ mtlLoader.load('./obj/earth.mtl', function (materials){
 
 var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999, rckt;
 
-
 /*Obj Load */
  function objLoader(materials){
      objLoader=new OBJLoader();
@@ -69,16 +68,15 @@ var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999,
          earth.position.set(2,-2.5,0);
          earth.rotation.y+=0.5;
          myScene.add(earth);
-         console.log(earth.position);
+         console.log("earth: " ,earth.position);
      });
-
     objLoader.load('./obj/sun.obj',function (obj){
         sun=obj;
         sun.position.set(0,-0.5,0);
         sun.scale.x=1.5;
         sun.scale.y=1.5;
         myScene.add(sun);
-        console.log(sun.position);
+        console.log("sun: ",sun.position);
     });
     objLoader.load('./obj/ufo.obj',function (obj){
         ufo=obj;
@@ -88,38 +86,34 @@ var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999,
         ufo.scale.x=1.5;
         ufo.scale.y=1.5;
         myScene.add(ufo);
-        console.log(ufo.position);
-
+        console.log("ufo: ",ufo.position);
     });
     objLoader.load('./obj/et.obj',function (obj){
         et=obj;
         et.position.set(-3.5,0,0);
         myScene.add(et);
-        console.log(et.position);
+        console.log("et: ",et.position);
     });
-    
     //big light
     objLoader.load('./obj/light1.obj',function (obj){
         light1=obj;
         light1.position.set(4.3,3.3,0);
         myScene.add(light1);
-        console.log(light1.position);
+        console.log("light1: ",light1.position);
     });
-
     //middle light
     objLoader.load('./obj/light2.obj',function (obj){
         light2=obj;
         light2.position.set(3.3,2.3,0);
         myScene.add(light2);
-        console.log(light2.position);
+        console.log("light2: ",light2.position);
     });
-
     //small light
     objLoader.load('./obj/light3.obj',function (obj){
         light3=obj;
         light3.position.set(2.5,1.5,0);
         myScene.add(light3); 
-        console.log(light3.position);
+        console.log("light3: ",light3.position);
     });
     objLoader.load('./obj/moon.obj',function (obj){
         moon=obj;
@@ -128,7 +122,7 @@ var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999,
         moon.scale.x=1.5;
         moon.scale.y=1.5;
         myScene.add(moon);
-        console.log(moon.position);
+        console.log("moon: ",moon.position);
     });
     objLoader.load('./obj/saturn.obj',function (obj){
         saturn=obj;
@@ -138,7 +132,7 @@ var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999,
         saturn.scale.x*=2;
         saturn.scale.y*=2;
         myScene.add(saturn);
-        console.log(saturn.position);
+        console.log("saturn: ",saturn.position);
     });
     objLoader.load('./obj/rckt.obj',function (obj){
         rckt=obj;
@@ -146,9 +140,8 @@ var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999,
         rckt.rotation.z+=0.5;
         rckt.rotation.y+=0.3;
         myScene.add(rckt);
-        console.log(rckt.position);
+        console.log("rckt: ",rckt.position);
     });
-    
     objLoader.load('./obj/train999.obj',function (obj){
         train999=obj;
         train999.position.set(-3,-3.5,0);
@@ -156,16 +149,21 @@ var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999,
         train999.rotation.x+=0.5;
         train999.name="train999";
         myScene.add(train999);
-        console.log(train999.position);
+        console.log("train: ",train999.position);
+        train999.addEventListener('mousedown',R());
     });
 }
+console.log(et);
+function R(obj){
+    // obj.rotation.x+=0.8;
+    console.log(3);
+}
 
+console.log("Components: " , myScene.children);  //group 누군지 아는 법
 
-console.log("Position Order: earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999, rckt");
-console.log("Components: " + myScene.children);  //group 누군지 아는 법
-// var t=myScene.getObjectByName("rckt");
-// console.log("t: "+t);
-// console.log(1, rckt);  //undefined
+var t=myScene.getObjectByName("rckt");
+console.log("t: ",t);
+console.log(1, rckt);  //undefined
     
 
 
