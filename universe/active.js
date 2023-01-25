@@ -42,7 +42,7 @@ myScene.background = new THREE.Color('#150050');
 
 
 // /*Controller / Loader*/
-// const ctrl=new OrbitControls(myCamera,myRenderer.domElement);
+const ctrl=new OrbitControls(myCamera,myRenderer.domElement);
 // ctrl.update();
 
 
@@ -153,30 +153,39 @@ var earth, sun, ufo, et, light1, light2, light2, light3, moon, saturn, train999,
         train999.addEventListener('mousedown',R());
     });
 }
-console.log(et);
+
+console.log("Components: " , myScene.children);  //group 누군지 아는 법
+
+//* Events
 function R(obj){
     // obj.rotation.x+=0.8;
     console.log(3);
 }
-
-console.log("Components: " , myScene.children);  //group 누군지 아는 법
-
-var t=myScene.getObjectByName("rckt");
-console.log("t: ",t);
-console.log(1, rckt);  //undefined
+// var t=myScene.getObjectByName("train999");
+// console.log("t: ",t);
+// console.log(1, rckt);  //undefined
     
 
 
-//* Events
 
-
+var cmrPst=myCamera.position.z;
 //*create animation
 function animate(){
-    // ctrl.update();
+    ctrl.update();
     requestAnimationFrame(animate);
-    // myScene.children.rotation.x+=0.2;
     myRenderer.render(myScene,myCamera);
+    // document.addEventListener("keyup",function GO(e){
+        
+    //     if(e.key== " " ||e.code=="Space")
+    //     {  
+    //         myCamera.position.z+=1.5;
+    //         console.log(cmrPst);
+    //         console.log(myCamera.position.z);
 
+    //         if(myCamera.position.z>15){
+    //         myCamera.position.z+=0; }
+    //     }        
+    // });
 }
 animate();
 
