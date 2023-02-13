@@ -56,19 +56,22 @@ mtlLoader.load('./obj/sun.mtl', function (materials){
 
 
 /*Obj Load */
+var earth,sun,ufo,et,light1,light2,light3,moon,saturn,rckt,train999=new THREE.Mesh;
+
+
  function objLoader(materials){
      objLoader=new OBJLoader();
      objLoader.setMaterials(materials);
      // objLoader.setPath('./obj/');
 
-     var earth= objLoader.load('./obj/earth.obj',function (earth){
+    objLoader.load('./obj/earth.obj',function (earth){
          console.log(earth.position);
          earth.position.set(2,-2.5,0);
          earth.rotation.y+=0.5;
          myScene.add(earth);
      });
 
-    var sun = objLoader.load('./obj/sun.obj',function (sun){
+    objLoader.load('./obj/sun.obj',function (sun){
         console.log(sun.position);
         let box=new THREE.Box3().setFromObject(sun);
         // let sunSize=box.max.x- box.min.y;
@@ -77,60 +80,60 @@ mtlLoader.load('./obj/sun.mtl', function (materials){
         sun.position.set(0,-0.5,0);
         myScene.add(sun);
     });
-    var ufo = objLoader.load('./obj/ufo.obj',function (ufo){
+    objLoader.load('./obj/ufo.obj',function (ufo){
         ufo.position.set(-4.5,1.3,0);
         ufo.rotation.z+=0.2;
         ufo.rotation.x+=0.3;
         myScene.add(ufo);
     });
-    var et = objLoader.load('./obj/et.obj',function (et){
+    objLoader.load('./obj/et.obj',function (et){
         //console.log(et.position);
         et.position.set(-3.5,0,0);
         myScene.add(et);
     });
     
     //big light
-    var light1 = objLoader.load('./obj/light1.obj',function (light1){
+    objLoader.load('./obj/light1.obj',function (light1){
         console.log(light1.position);
         light1.position.set(4.3,3.3,0);
         myScene.add(light1);
     });
 
     //middle light
-    var light2 = objLoader.load('./obj/light2.obj',function (light2){
+    objLoader.load('./obj/light2.obj',function (light2){
         console.log(light2.position);
         light2.position.set(3.3,2.3,0);
         myScene.add(light2);
     });
 
     //small light
-    var light3 = objLoader.load('./obj/light3.obj',function (light3){
+    objLoader.load('./obj/light3.obj',function (light3){
         console.log(light3.position);
         light3.position.set(2.5,1.5,0);
         myScene.add(light3); 
     });
-    var moon = objLoader.load('./obj/moon.obj',function (moon){
+    objLoader.load('./obj/moon.obj',function (moon){
         console.log(moon.position);
         moon.position.set(-1.8,2.3,0);
         moon.rotation.x+=0.1;
 
         myScene.add(moon);
     });
-    var saturn = objLoader.load('./obj/saturn.obj',function (saturn){
+    objLoader.load('./obj/saturn.obj',function (saturn){
         console.log(saturn.position);
         saturn.position.set(0,3.8,0);
         saturn.rotation.z-=0.2;
         saturn.rotation.x+=0.5;
         myScene.add(saturn);
     });
-    var rckt = objLoader.load('./obj/rckt.obj',function (rckt){
+    objLoader.load('./obj/rckt.obj',function (rckt){
         console.log(rckt.position);
         rckt.position.set(4,-4,0);
         rckt.rotation.z+=0.5;
         rckt.rotation.y+=0.3;
         myScene.add(rckt);
     });
-    var train999 = objLoader.load('./obj/train999.obj',function (train999){
+    objLoader.load('./obj/train999.obj',function (train999){
         console.log(train999.position);
         train999.position.set(-3,-3.5,0);
         train999.rotation.z+=0.7;
@@ -140,17 +143,32 @@ mtlLoader.load('./obj/sun.mtl', function (materials){
 
 }
 
-
 //* Events
 // train999=
 // train999.addEventListener("click",R);
 // function R(){
 //     Mesh.rotation.x+=0.5;
 // }
+const rc=new THREE.Raycaster();
+const pt=new THREE.Vector2();
+function P(e){
+    pt.x=(ev.clientX/window.innerWidth)*2 -1;
+    pt.y=(ev.clientX/window.innerHeight)*2 -1;
+}
+
+function rd(){
+
+    rc.setFromCamera(pt,myCamera);
+    const it=rc.intersectObject(myScene.children);
+    it.train999.position.set(20);
+    myRenderer.render(myScene,myCamera);
+}
+rd();
+
 //*create animation
 function animate(){
+
     ctrl.update();
-    
     requestAnimationFrame(animate);
     myRenderer.render(myScene,myCamera);
 }
