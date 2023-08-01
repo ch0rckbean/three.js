@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Camera, Mesh } from 'three';
-import {AxesHelper} from 'three/src/helpers/AxesHelper.js'
+import {AxesHelper} from '../node_modules/three/src/helpers/AxesHelper.js'
 
 //*Basic setting
 var myRenderer;

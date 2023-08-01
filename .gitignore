@@ -1,0 +1,4 @@
+*.json
+환경세팅.txt
+node_modules/
+learning-threejs/
