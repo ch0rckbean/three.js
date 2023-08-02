@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>threejs_study</title>
+    <style>
+        body{
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="container"></div>
+    <script type="importmap" >
+        {
+        "imports":{
+            "three":"../node_modules/three/build/three.module.js"
+        }
+    }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import {AxesHelper} from '../node_modules/three/src/helpers/AxesHelper.js'
+
+        const rd_w=640;
+        const rd_h=480;
+//기본 setting
+        var scene=new THREE.Scene();
+        var camera=new THREE.PerspectiveCamera(45,rd_w/rd_h,10,200);
+        var renderer=new THREE.WebGLRenderer();
+        renderer.setSize(rd_w,rd_h);
+        renderer.shadowMapEnabled=true; //default: 비활성화. 그림자 필요함 알림 + 그림자 드리울(receiveShadow)/표시할(castShadow) 객체 명시적 정의 + scene에서 그림자 그릴 광원 정하기
+//cmr setting
+        camera.position.x=-30;
+        camera.position.y=40;
+        camera.position.z=30;
+        camera.lookAt(scene.position);
+//보조 축 추가
+        var axes=new THREE.AxesHelper(20); 
+        scene.add(axes);
+//평면 추가
+        var planeGeometry=new THREE.PlaneGeometry(60,20);
+        var planeMaterial=new THREE.MeshPhongMaterial({color:0xcccccc});  //Material 객체를 통해 색상,투명도 등 설정
+        var plane=new THREE.Mesh(planeGeometry,planeMaterial);  //Mesh  객체를 통한 결합
+
+        plane.rotation.x=-0.5*Math.PI;
+        plane.position.x=15;
+        plane.position.y=0;
+        plane.position.z=0;
+        plane.receiveShadow=true;
+
+        scene.add(plane);
+//cube 추가
+        var cubeGeometry=new THREE.BoxGeometry(4,4,4);
+        var cubeMaterial=new THREE.MeshPhongMaterial({color:0xff0000});
+        var cube=new THREE.Mesh(cubeGeometry,cubeMaterial);
+
+        cube.position.x=-4;
+        cube.position.y=3;
+        cube.position.z=0;
+
+        cube.castShadow=true; //cube의 그림자 표현할 것임(cast)
+
+        scene.add(cube);
+//sphere 추가
+        var sphereGeometry=new THREE.SphereGeometry(4,20,20);
+        var sphereMaterial=new THREE.MeshPhongMaterial({color:0x7777ff});
+        var sphere=new THREE.Mesh(sphereGeometry,sphereMaterial);
+
+        sphere.position.x=20;
+        sphere.position.y=4;
+        sphere.position.z=2;
+
+        scene.castShadow=true; //sphere의 그림자 표현할 것임(cast)
+
+        scene.add(sphere);
+//Light Source 추가 => material에 따라 광원에 대해 다르게 반응하기에 변화 x(MeshBasicMaterial=>Lambert/Phong Material)
+        var spotLight=new THREE.SpotLight('#38E54D');
+        spotLight.position.set(-40,60,-10);
+
+        spotLight.castShadow=true; //scene의 어떤 광원에서 그림자 그릴지
+        scene.add(spotLight);
+
+//DOM에 render
+        document.getElementById("container").appendChild(renderer.domElement);
+        renderer.render(scene,camera);
+    </script>
+</body>
+</html>
