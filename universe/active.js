@@ -17,6 +17,7 @@ let rd_w = window.innerWidth;
 let rd_h = window.innerHeight;
 myRenderer.setSize(rd_w, rd_h);
 myRenderer.setViewport(0, 0, rd_w, rd_h);
+
 const container = document.getElementById("universe");
 container.appendChild(myRenderer.domElement);
 //*camera setting
@@ -178,8 +179,7 @@ rd();
 function animate() {
   //정상 동작 함: transform은 왜 동작 x? => Mesh로 변환
   ctrl.update();
-  //   console.log("333");
-  //   sun.rotation.x += 0.3;
+  sun.rotation.y += 0.02;
   requestAnimationFrame(animate);
   myRenderer.render(myScene, myCamera);
 }
