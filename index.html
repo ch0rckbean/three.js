@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <header>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Universe!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Tektur:wght@400;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      .tooltip {
+        text-decoration: none;
+        font-family: "Tektur", cursive;
+      }
+    </style>
+  </header>
+  <body>
+    <div id="universe">
+      <script type="importmap">
+        {
+          "imports": {
+            "three": "../node_modules/three/build/three.module.js"
+          }
+        }
+      </script>
+      <script type="module" src="./active.js"></script>
+    </div>
+  </body>
+</html>
