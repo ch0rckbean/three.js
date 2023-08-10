@@ -1,12 +1,19 @@
 import * as THREE from "three";
 import { MaterialLoader, Mesh } from "three";
-import { OrbitControls } from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
-import { OBJLoader } from "../node_modules/three/examples/jsm/loaders/OBJLoader.js";
-import { MTLLoader } from "../node_modules/three/examples/jsm/loaders/MTLLoader.js";
+// import { OrbitControls } from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
+// import { OBJLoader } from "../node_modules/three/examples/jsm/loaders/OBJLoader.js";
+// import { MTLLoader } from "../node_modules/three/examples/jsm/loaders/MTLLoader.js";
+// import {
+//   CSS2DRenderer,
+//   CSS2DObject,
+// } from "../node_modules/three/examples/jsm/renderers/CSS2DRenderer.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+import { MTLLoader } from "three/addons/loaders/MTLLoader.js";
 import {
   CSS2DRenderer,
   CSS2DObject,
-} from "../node_modules/three/examples/jsm/renderers/CSS2DRenderer.js";
+} from "three/addons/renderers/CSS2DRenderer.js";
 
 /* Basic Setting*/
 var myRenderer;
