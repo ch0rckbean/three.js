@@ -1,3 +1,3 @@
 # threejs_study
- - [Computer Graphics] assignment , practice 
+ - [Computer Graphics] Lecture assignment , practice 
  - book study
